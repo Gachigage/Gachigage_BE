@@ -35,7 +35,7 @@ public class ApiExceptionHandler {
 	public ResponseEntity<ApiResponse<Void>> handleAllException(Exception ex) {
 		log.error("Internal Server Error: ", ex);
 		HttpStatus internalServerError = HttpStatus.INTERNAL_SERVER_ERROR;
-		
+
 		return ResponseEntity.status(internalServerError)
 			.body(ApiResponse.fail(internalServerError.value(), "서버 내부에 오류가 발생했습니다."));
 	}
