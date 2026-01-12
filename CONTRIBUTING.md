@@ -68,14 +68,29 @@ src/main/java/com/team/project
 
 ## 4. 🐙 깃 & 협업 전략 (Git Workflow Strategies)
 
-### 4-1. 브랜치 전략
+### 4-1. 🎫 이슈 관리 (GitHub Issues)
 
-- **main**: 배포 가능한 상태의 기준 브랜치
-- **develop**: 다음 배포를 위해 개발 중인 브랜치
+작업 시작 전, 반드시 **이슈(Issue)**를 먼저 생성해야 합니다.
+`.github/ISSUE_TEMPLATE`에 등록된 3가지 템플릿 중 상황에 맞는 것을 선택하세요.
+
+| 타입        | 템플릿 선택       | 사용 시점                         |
+|:----------|:-------------|:------------------------------|
+| **✨ 기능**  | `Feature`    | 새로운 API, 비즈니스 로직 등 주요 기능 개발 시 |
+| **🐛 버그** | `Bug Report` | 개발 중 발생한 에러나, 잘못된 동작을 고칠 때    |
+| **🛠 작업** | `Task`       | 문서 작성, 환경 설정, 리팩토링 등 기타 작업    |
+
+> **💡 참고:** 오타 수정이나 단순 변수명 변경 같은 초소형 작업은 이슈 없이 진행해도 됩니다.
+
+### 4-2. 브랜치 전략
+
+**절대 `main`이나 `develop` 브랜치에서 직접 작업하지 마세요.**
+
+- **main**: 배포 가능한 최상위 브랜치 (건드리지 않음)
+- **develop**: 팀원들의 코드가 모이는 통합 브랜치 (**Target Branch**)
 - **{commit type}/{기능명}**: 실제 기능 개발이 이루어지는 브랜치
     - 예: `feature/login`, `docs/contributing-guide`
 
-### 4-2. 커밋 메시지 컨벤션
+### 4-3. 커밋 메시지 컨벤션
 
 `[<type>] <subject>` 형식을 따릅니다.
 
@@ -89,6 +104,52 @@ src/main/java/com/team/project
 | **chore**    | 빌드 설정, 패키지 매니저 설정 등       |
 
 - **Example:** `[feat] 회원가입 유효성 검사 로직 추가 (#12)`
+
+### 4-4. 개발 루틴
+
+#### 1. 이슈 생성 및 브랜치 생성
+
+- GitHub Issue 생성 -> 우측 사이드바 `Projects` 연결 -> `Development`에서 브랜치 생성
+- 또는 터미널: `git checkout -b feature/login`
+
+#### 2. 작업 및 커밋
+
+- 커밋 메시지 끝에 이슈 번호 필수 태깅
+- 예: `[feat] 로그인 서비스 로직 구현 (#12)`
+
+#### 3. 로컬 머지 및 푸시
+
+작업이 끝나면 아래 순서대로 `develop`에 합칩니다.
+
+   ```bash
+   # 1. develop 브랜치로 이동
+   git checkout develop
+   
+   # 2. 원격 저장소의 최신 코드 받아오기 (충돌 방지 필수!)
+   git pull origin develop
+   
+   #3. 내 작업 브랜치로 이동
+   git checkout feature/login
+   
+   #4. 최신화된 develop을 rebase 
+   git rebase develop
+   
+   # 5. 내 작업 브랜치 푸시
+   git push origin feature/login
+   
+   # 6. Github에서 PR(Pull Request) 보냄
+   
+   # 7. 다 쓴 기능 브랜치 삭제 (선택)
+   git branch -d feature/login
+```
+
+### 4-5. 트러블 슈팅 및 소통
+
+- 개발 중 문제 발생: 해당 이슈의 **댓글**에 진행 상황과 에러 로그를 남깁니다.
+
+- 심각한 버그: 별도의 Bug Report 이슈를 생성하여 관리합니다.
+
+- 완료 처리: 커밋 메시지나 마지막 댓글에 Closes #12를 남기거나, Project Board에서 카드를 Done으로 이동시킵니다.
 
 ---
 
@@ -138,10 +199,3 @@ src/main/java/com/team/project
 - **민감 정보 관리 (Secret Key):**
     - `application.yml`에 DB 비밀번호나 AWS 키를 절대 올리면 안 됨
     - 해결책: `.gitignore` 처리 후 로컬 공유
-
----
-
-## 7. 이슈 관리 및 일정 (Issues & Schedules)
-
-- **이슈 트래커:** `GitHub Issues`를 사용
-- **커밋과 이슈 연동:** 커밋 메시지에 `#12`와 같이 이슈 번호를 남겨 추적 가능함
