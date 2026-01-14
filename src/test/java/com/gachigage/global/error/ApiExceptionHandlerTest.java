@@ -8,25 +8,40 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @WebMvcTest(controllers = ApiExceptionHandler.class)
-@Import(CustomExceptionTestController.class)
+@Import(ApiExceptionHandlerTest.TestController.class)
 class ApiExceptionHandlerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
+	@RestController
+	static class TestController {
+		@GetMapping("/test/custom-exception")
+		public void throwCustomException() {
+			ErrorCode errorCode = ErrorCode.USER_NOT_FOUND;
+			throw new CustomException(errorCode);
+		}
+
+		@GetMapping("/test/unexpected-exception")
+		public void throwUnexpectedException() {
+			throw new RuntimeException();
+		}
+	}
+
 	@Test
 	@DisplayName("CustomException 발생 시 설정한 HttpStatus와 메시지가 반환")
 	void handleCustomExceptionTest() throws Exception {
-		HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+		ErrorCode errorCode = ErrorCode.USER_NOT_FOUND;
 
 		mockMvc.perform(get("/test/custom-exception"))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.status").value("fail"))
-			.andExpect(jsonPath("$.message").value(badRequest.getReasonPhrase()));
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.status").value(errorCode.getHttpStatus().value()))
+			.andExpect(jsonPath("$.message").value(errorCode.getMessage()));
 	}
 
 	@Test
@@ -34,7 +49,7 @@ class ApiExceptionHandlerTest {
 	void handleAllExceptionTest() throws Exception {
 		mockMvc.perform(get("/test/unexpected-exception"))
 			.andExpect(status().isInternalServerError())
-			.andExpect(jsonPath("$.status").value("fail"))
+			.andExpect(jsonPath("$.status").value(500))
 			.andExpect(jsonPath("$.message").value("서버 내부에 오류가 발생했습니다."));
 	}
 }
