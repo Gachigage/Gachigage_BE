@@ -1,72 +1,86 @@
 package com.gachigage.product.domain;
 
+import com.gachigage.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Product {
+@Table(name = "Product")
+public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false)
-    private Long sellerId; // TODO: 추후 User 엔티티와 연관관계 설정
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private Member seller;
 
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private ProductCategory category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false)
+    private Region region;
+
+    @Column(name = "name", length = 50, nullable = false)
+    private String name;
+
+    @Column(name = "title", length = 100, nullable = false)
     private String title;
 
-    @Lob
-    @Column(nullable = false)
-    private String detail;
+    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    private String description;
 
-    @Embedded
-    private Category category;
+    @Column(name = "stock", nullable = false)
+    private Long stock;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "price_table", joinColumns = @JoinColumn(name = "product_id"))
-    private List<PriceTable> priceTable = new ArrayList<>();
+    @Column(name = "trade_type", length = 20, nullable = false)
+    private String tradeType;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "trade_type", joinColumns = @JoinColumn(name = "product_id"))
-    @Column(name = "trade_type")
-    private List<String> tradeTypes = new ArrayList<>();
+    @ColumnDefault("0")
+    @Column(name = "visit_count", nullable = false)
+    private int visitCount;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "trade_location", joinColumns = @JoinColumn(name = "product_id"))
-    private List<TradeLocation> preferredTradeLocations = new ArrayList<>();
+    @ColumnDefault("0")
+    @Column(name = "like_count", nullable = false)
+    private int likeCount;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "product_image", joinColumns = @JoinColumn(name = "product_id"))
-    @Column(name = "image_url")
-    private List<String> imageUrls = new ArrayList<>();
+    @Column(name = "latitude")
+    private Double latitude;
 
-    private int viewCount = 0;
+    @Column(name = "longtitude")
+    private Double longtitude;
 
-    private int likeCount = 0;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductPrice> prices = new ArrayList<>();
 
     @Builder
-    public Product(Long sellerId, String title, String detail, Category category, List<PriceTable> priceTable, List<String> tradeTypes, List<TradeLocation> preferredTradeLocations, List<String> imageUrls) {
-        this.sellerId = sellerId;
-        this.title = title;
-        this.detail = detail;
+    public Product(Member seller, ProductCategory category, Region region, String name, String title,
+                   String description, Long stock, String tradeType, Double latitude, Double longtitude) {
+        this.seller = seller;
         this.category = category;
-        this.priceTable = priceTable;
-        this.tradeTypes = tradeTypes;
-        this.preferredTradeLocations = preferredTradeLocations;
-        this.imageUrls = imageUrls;
+        this.region = region;
+        this.name = name;
+        this.title = title;
+        this.description = description;
+        this.stock = stock;
+        this.tradeType = tradeType;
+        this.latitude = latitude;
+        this.longtitude = longtitude;
     }
 }
