@@ -41,9 +41,7 @@ class OAuth2SuccessHandlerTest {
 
 		// given
 		given(authentication.getPrincipal()).willReturn(oAuth2User);
-		given(oAuth2User.getAttributes()).willReturn(Map.of(
-			"kakao_account", Map.of("email", "test@kakao.com")
-		));
+		given(oAuth2User.getAttributes()).willReturn(Map.of("kakao_account", Map.of("email", "test@kakao.com")));
 		given(oAuth2User.getMember()).willReturn(member);
 		given(member.getRoleType()).willReturn(RoleType.USER);
 		given(jwtProvider.generateAccessToken(anyString(), anyMap())).willReturn("fake-access-token");

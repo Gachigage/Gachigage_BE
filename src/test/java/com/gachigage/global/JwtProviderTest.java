@@ -24,8 +24,7 @@ import io.jsonwebtoken.security.Keys;
 class JwtProviderTest {
 	private JwtProvider jwtProvider;
 
-	// HS256 알고리즘을 위해 32바이트 이상의 키가 필요합니다.
-	private final String TEST_SECRET = "testSecretKeytestSecretKeytestSecretKeytestSecretKey";
+	private static final String TEST_SECRET = "testSecretKeytestSecretKeytestSecretKeytestSecretKey";
 
 	@BeforeEach
 	void setUp() {
@@ -85,7 +84,7 @@ class JwtProviderTest {
 		// given
 		String email = "admin@example.com";
 		Map<String, Object> claims = new HashMap<>();
-		// JwtProvider 로직상 roleType 클레임이 필수이므로 추가
+
 		claims.put("roleType", "ROLE_ADMIN");
 
 		String token = jwtProvider.generateAccessToken(email, claims);
@@ -96,8 +95,8 @@ class JwtProviderTest {
 		// then
 		assertThat(authentication).isNotNull();
 		assertThat(authentication.getName()).isEqualTo(email);
-		assertThat(authentication.getAuthorities().stream()
-			.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))).isTrue();
+		assertThat(
+			authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))).isTrue();
 	}
 
 	@Test

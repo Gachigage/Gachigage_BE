@@ -39,8 +39,8 @@ class CustomOAuth2UserServiceTest {
 		given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
 
 		// when
-		Member result = ReflectionTestUtils.invokeMethod(customOAuth2UserService, "saveOrUpdate",
-			email, nickname, name, birthday, birthyear, role);
+		Member result = ReflectionTestUtils.invokeMethod(customOAuth2UserService, "saveOrUpdate", email, nickname, name,
+			birthday, birthyear, role);
 
 		// then
 		verify(memberRepository).save(any(Member.class));
