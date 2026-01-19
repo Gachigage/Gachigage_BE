@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 	private final JwtProvider jwtProvider;
 
+	@Value("${front.url}")
+	private String frontEndUrl;
+
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException, ServletException {
@@ -40,7 +44,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 		String accessToken = jwtProvider.generateAccessToken(email, claims);
 
-		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/auth/kakao/callback")
+		String targetUrl = UriComponentsBuilder.fromUriString(frontEndUrl + "/auth/kakao/callback")
 			.queryParam("token", accessToken)
 			.build()
 			.toUriString();

@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.*;
 import java.io.IOException;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.gachigage.global.config.JwtProvider;
 import com.gachigage.global.login.CustomOAuth2User;
@@ -29,6 +31,13 @@ class OAuth2SuccessHandlerTest {
 
 	@InjectMocks
 	private OAuth2SuccessHandler successHandler;
+
+	private static final String frontEndUrl = "http://localhost:3000";
+
+	@BeforeEach
+	void setUp() {
+		ReflectionTestUtils.setField(successHandler, "frontEndUrl", frontEndUrl);
+	}
 
 	@Test
 	@DisplayName("로그인 성공 시 AccessToken을 쿼리 파라미터에 담아 리다이렉트")
@@ -51,6 +60,6 @@ class OAuth2SuccessHandlerTest {
 		successHandler.onAuthenticationSuccess(request, response, authentication);
 
 		// then
-		verify(response).sendRedirect("http://localhost:3000/auth/kakao/callback?token=fake-access-token");
+		verify(response).sendRedirect(frontEndUrl + "/auth/kakao/callback?token=fake-access-token");
 	}
 }
