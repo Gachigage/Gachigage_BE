@@ -47,20 +47,20 @@ public class JwtProvider {
 		key = Keys.hmacShaKeyFor(secret.getBytes());
 	}
 
-	public String generateAccessToken(final String id, final Map<String, Object> claims) {
+	public String generateAccessToken(final Long id, final Map<String, Object> claims) {
 		long currentTimeMills = System.currentTimeMillis();
 
 		return Jwts.builder()
 			.id(UUID.randomUUID().toString())
 			.claims(claims)
-			.subject(id)
+			.subject(String.valueOf(id))
 			.issuedAt(new Date(currentTimeMills))
 			.expiration(new Date(currentTimeMills + JWT_TOKEN_VALID))
 			.signWith(key)
 			.compact();
 	}
 
-	public String generateAccessToken(final String id) {
+	public String generateAccessToken(final Long id) {
 		return generateAccessToken(id, new HashMap<>());
 	}
 
@@ -127,8 +127,12 @@ public class JwtProvider {
 		return getClaimFromToken(token, Claims::getId);
 	}
 
+	public Long getIdFromToken(final String token) {
+		return Long.parseLong(getClaimFromToken(token, Claims::getSubject));
+	}
+
 	public String getEmailFromToken(final String token) {
-		return getClaimFromToken(token, Claims::getSubject);
+		return getAllClaimsFromToken(token).get("email", String.class);
 	}
 
 	public Date getExpirationDateFromToken(final String token) {

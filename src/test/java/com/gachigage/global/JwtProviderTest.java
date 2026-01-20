@@ -40,7 +40,7 @@ class JwtProviderTest {
 	@DisplayName("토큰이 정상적으로 생성")
 	void generateAccessTokenTest() {
 		// given
-		String id = "user@example.com";
+		Long id = 1L;
 
 		// when
 		String token = jwtProvider.generateAccessToken(id);
@@ -55,7 +55,7 @@ class JwtProviderTest {
 	@DisplayName("유효한 토큰은 True를 반환")
 	void validateTokenSuccessTest() {
 		// given
-		String token = jwtProvider.generateAccessToken("user@example.com");
+		String token = jwtProvider.generateAccessToken(1L);
 
 		// when
 		Boolean isValid = jwtProvider.validateToken(token);
@@ -68,33 +68,39 @@ class JwtProviderTest {
 	@DisplayName("생성된 토큰에서 회원정보(email)를 추출")
 	void getEmailFromTokenTest() {
 		// given
-		String email = "user@example.com";
-		String token = jwtProvider.generateAccessToken(email);
+		Long id = 1L;
+		HashMap<String, Object> map = new HashMap<>();
+		map.put("email", "test@gmail.com");
+
+		String token = jwtProvider.generateAccessToken(id, map);
 
 		// when
+		Long extractedId = jwtProvider.getIdFromToken(token);
 		String extractedEmail = jwtProvider.getEmailFromToken(token);
 
 		// then
-		assertThat(extractedEmail).isEqualTo(email);
+		assertThat(extractedId).isEqualTo(id);
+		assertThat(extractedEmail).isEqualTo("test@gmail.com");
 	}
 
 	@Test
 	@DisplayName("생성된 토큰에서 회원정보(authentication)를 추출")
 	void getAuthenticationTest() {
 		// given
+		Long id = 1L;
 		String email = "admin@example.com";
 		Map<String, Object> claims = new HashMap<>();
-
+		claims.put("email", email);
 		claims.put("roleType", "ROLE_ADMIN");
 
-		String token = jwtProvider.generateAccessToken(email, claims);
+		String token = jwtProvider.generateAccessToken(id, claims);
 
 		// when
 		Authentication authentication = jwtProvider.getAuthentication(token);
 
 		// then
 		assertThat(authentication).isNotNull();
-		assertThat(authentication.getName()).isEqualTo(email);
+		assertThat(authentication.getName()).isEqualTo(String.valueOf(id));
 		assertThat(
 			authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))).isTrue();
 	}

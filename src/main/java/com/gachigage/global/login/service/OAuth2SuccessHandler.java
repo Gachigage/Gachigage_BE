@@ -36,14 +36,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		CustomOAuth2User oAuth2User = (CustomOAuth2User)authentication.getPrincipal();
 		Map<String, Object> attributes = oAuth2User.getAttributes();
 		Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
+		Long oauthId = (Long)attributes.get("id");
 		String email = (String)kakaoAccount.get("email");
 		RoleType roleType = oAuth2User.getMember().getRoleType();
 		Map<String, Object> claims = new HashMap<>();
-
+		claims.put("email", email);
 		claims.put("roleType", roleType);
 
-		String accessToken = jwtProvider.generateAccessToken(email, claims);
-
+		String accessToken = jwtProvider.generateAccessToken(oauthId, claims);
+		log.warn("accessToken: {}", accessToken);
 		String targetUrl = UriComponentsBuilder.fromUriString(frontEndUrl + "/auth/kakao/callback")
 			.queryParam("token", accessToken)
 			.build()
