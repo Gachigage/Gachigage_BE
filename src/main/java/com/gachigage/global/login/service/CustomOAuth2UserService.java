@@ -41,27 +41,29 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		}
 		Map<String, Object> profile = (Map<String, Object>)kakaoAccount.get("profile");
 
+		String providerName = userRequest.getClientRegistration().getRegistrationId();
 		String email = (String)kakaoAccount.get("email");
 
 		if (email == null) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
 
+		Long oauthId = (Long)attributes.get("id");
 		String birthday = (String)kakaoAccount.get("birthday");
 		String birthyear = (String)kakaoAccount.get("birthyear");
 		String name = (String)kakaoAccount.get("name");
 		String nickname = (String)profile.get("nickname");
 		RoleType roleType = RoleType.USER;
 
-		Member member = saveOrUpdate(email, nickname, name, birthday, birthyear, roleType);
+		Member member = saveOrUpdate(oauthId, providerName, email, nickname, name, birthday, birthyear, roleType);
 		CustomOAuth2User customOAuth2User = new CustomOAuth2User(member, attributes);
 		log.info("oauth2userservice -> customoauth2user.getAttributes: {}", customOAuth2User.getAttributes());
 
 		return customOAuth2User;
 	}
 
-	private Member saveOrUpdate(String email, String nickname, String name, String birthday, String birthyear,
-		RoleType roleType) {
+	private Member saveOrUpdate(Long oauthId, String providerName, String email, String nickname, String name,
+		String birthday, String birthyear, RoleType roleType) {
 		LocalDate birthDate = LocalDate.of(Integer.parseInt(birthyear), Integer.parseInt(birthday.substring(0, 2)),
 			Integer.parseInt(birthday.substring(2)));
 		Member member = memberRepository.findMemberByEmail(email)
@@ -70,6 +72,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 				.email(email)
 				.nickname(nickname)
 				.birthDate(birthDate)
+				.oauthId(oauthId)
+				.oauthProvider(providerName)
 				.roleType(roleType)
 				.build());
 

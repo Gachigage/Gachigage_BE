@@ -33,18 +33,22 @@ class CustomOAuth2UserServiceTest {
 		String name = "홍길동";
 		String birthday = "0101";
 		String birthyear = "2000";
+		Long oauthId = 1234567891234L;
+		String oauthProvider = "kakao";
 		RoleType role = RoleType.USER;
 
 		given(memberRepository.findMemberByEmail(email)).willReturn(Optional.empty());
 		given(memberRepository.save(any(Member.class))).willAnswer(invocation -> invocation.getArgument(0));
 
 		// when
-		Member result = ReflectionTestUtils.invokeMethod(customOAuth2UserService, "saveOrUpdate", email, nickname, name,
-			birthday, birthyear, role);
+		Member result = ReflectionTestUtils.invokeMethod(customOAuth2UserService, "saveOrUpdate", oauthId,
+			oauthProvider, email, nickname, name, birthday, birthyear, role);
 
 		// then
 		verify(memberRepository).save(any(Member.class));
 		assert result.getEmail().equals(email);
 		assert result.getBirthDate().toString().equals("2000-01-01");
+		assert result.getOauthId().equals(oauthId);
+		assert result.getOauthProvider().equals(oauthProvider);
 	}
 }

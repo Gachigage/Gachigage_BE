@@ -45,7 +45,7 @@ public class Member {
 	private String imageUrl;
 
 	@Column(name = "oauth_id")
-	private String oauthId;
+	private Long oauthId;
 
 	@Column(name = "oauth_provider")
 	private String oauthProvider;
