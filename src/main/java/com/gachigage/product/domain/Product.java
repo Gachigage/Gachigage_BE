@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.gachigage.global.common.BaseEntity;
+import com.gachigage.member.Member;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,9 +35,9 @@ public class Product extends BaseEntity {
 	@Column(name = "id")
 	private Long id;
 
-	//    @ManyToOne(fetch = FetchType.LAZY)
-	//    @JoinColumn(name = "seller_id", nullable = false)
-	//    private Member seller;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "seller_id", nullable = false)
+	private Member seller;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id", nullable = false)
@@ -80,18 +82,18 @@ public class Product extends BaseEntity {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProductPrice> prices = new ArrayList<>();
 
-	//    @Builder
-	//    public Product(Member seller, ProductCategory category, Region region, String name, String title,
-	//                   String description, Long stock, String tradeType, Double latitude, Double longtitude) {
-	//        this.seller = seller;
-	//        this.category = category;
-	//        this.region = region;
-	//        this.name = name;
-	//        this.title = title;
-	//        this.description = description;
-	//        this.stock = stock;
-	//        this.tradeType = tradeType;
-	//        this.latitude = latitude;
-	//        this.longtitude = longtitude;
-	//    }
+	@Builder
+	public Product(Member seller, ProductCategory category, Region region, String name, String title,
+		String description, Long stock, String tradeType, Double latitude, Double longtitude) {
+		this.seller = seller;
+		this.category = category;
+		this.region = region;
+		this.name = name;
+		this.title = title;
+		this.description = description;
+		this.stock = stock;
+		this.tradeType = tradeType;
+		this.latitude = latitude;
+		this.longtitude = longtitude;
+	}
 }
