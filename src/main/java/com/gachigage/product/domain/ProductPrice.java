@@ -41,4 +41,8 @@ public class ProductPrice {
 		this.quantity = quantity;
 		this.price = price;
 	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
 }

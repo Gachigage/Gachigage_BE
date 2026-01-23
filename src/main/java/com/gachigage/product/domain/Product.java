@@ -11,6 +11,8 @@ import com.gachigage.member.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,9 +49,6 @@ public class Product extends BaseEntity {
 	@JoinColumn(name = "region_id", nullable = false)
 	private Region region;
 
-	@Column(name = "name", length = 50, nullable = false)
-	private String name;
-
 	@Column(name = "title", length = 100, nullable = false)
 	private String title;
 
@@ -59,8 +58,9 @@ public class Product extends BaseEntity {
 	@Column(name = "stock", nullable = false)
 	private Long stock;
 
-	@Column(name = "trade_type", length = 20, nullable = false)
-	private String tradeType;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "trade_type", nullable = false)
+	private TradeType tradeType;
 
 	@ColumnDefault("0")
 	@Column(name = "visit_count", nullable = false)
@@ -76,24 +76,35 @@ public class Product extends BaseEntity {
 	@Column(name = "longtitude")
 	private Double longtitude;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductImage> images = new ArrayList<>();
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductPrice> prices = new ArrayList<>();
 
 	@Builder
-	public Product(Member seller, ProductCategory category, Region region, String name, String title,
-		String description, Long stock, String tradeType, Double latitude, Double longtitude) {
+	public Product(Long id, Member seller, ProductCategory category, Region region,
+		String title, String description, Long stock, TradeType tradeType, Double latitude, Double longtitude) {
+		this.id = id;
 		this.seller = seller;
 		this.category = category;
 		this.region = region;
-		this.name = name;
 		this.title = title;
 		this.description = description;
 		this.stock = stock;
 		this.tradeType = tradeType;
 		this.latitude = latitude;
 		this.longtitude = longtitude;
+	}
+
+
+	public void addPrice(ProductPrice price) {
+		this.prices.add(price);
+		price.setProduct(this);
+	}
+
+	public void addImage(ProductImage image) {
+		this.images.add(image);
+		image.setProduct(this);
 	}
 }

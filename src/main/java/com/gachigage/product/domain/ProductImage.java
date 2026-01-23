@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "ProductImage")
-public class ProductImage {
+public class  ProductImage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,5 +40,9 @@ public class ProductImage {
 		this.product = product;
 		this.imageUrl = imageUrl;
 		this.order = order;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 }
