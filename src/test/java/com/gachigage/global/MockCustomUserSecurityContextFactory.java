@@ -19,6 +19,7 @@ public class MockCustomUserSecurityContextFactory implements WithSecurityContext
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 
 		Member member = Member.builder()
+			.id(annotation.id())
 			.email(annotation.email())
 			.name(annotation.name())
 			.roleType(RoleType.valueOf(annotation.role()))

@@ -41,4 +41,8 @@ public class ProductImage {
 		this.imageUrl = imageUrl;
 		this.order = order;
 	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
 }

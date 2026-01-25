@@ -22,9 +22,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 class JwtProviderTest {
-	private JwtProvider jwtProvider;
-
 	private static final String TEST_SECRET = "testSecretKeytestSecretKeytestSecretKeytestSecretKey";
+	private JwtProvider jwtProvider;
 
 	@BeforeEach
 	void setUp() {

@@ -31,14 +31,10 @@ public class Region {
 	@Column(name = "district", length = 50, nullable = false)
 	private String district;
 
-	@Column(name = "dong", length = 50, nullable = false)
-	private String dong;
-
 	@Builder
-	public Region(String province, String city, String district, String dong) {
+	public Region(String province, String city, String district) {
 		this.province = province;
 		this.city = city;
 		this.district = district;
-		this.dong = dong;
 	}
 }
