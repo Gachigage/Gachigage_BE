@@ -51,18 +51,17 @@ class ProductServiceTest {
 		savedMember = memberRepository.save(member);
 
 		ProductCategory mainCategory = ProductCategory
-				.builder()
-				.name("가구")
-				.build();
+			.builder()
+			.name("가구")
+			.build();
 
 		productCategoryRepository.save(mainCategory);
 
 		ProductCategory subCategory = ProductCategory
-				.builder()
-				.name("의자")
-				.parent(mainCategory)
-				.build();
-
+			.builder()
+			.name("의자")
+			.parent(mainCategory)
+			.build();
 
 		savedCategory = productCategoryRepository.save(subCategory);
 	}
@@ -89,15 +88,15 @@ class ProductServiceTest {
 
 		// when
 		Product product = productService.createProduct(
-				savedMember.getId(),
-				savedCategory.getId(),
-				title,
-				detail,
-				stock,
-				priceTable,
-				tradeType,
-				tradeLocation,
-				imageUrls
+			savedMember.getId(),
+			savedCategory.getId(),
+			title,
+			detail,
+			stock,
+			priceTable,
+			tradeType,
+			tradeLocation,
+			imageUrls
 		);
 
 		// then
@@ -110,6 +109,9 @@ class ProductServiceTest {
 		assertThat(foundProduct.getTradeType()).isEqualTo(tradeType);
 		assertThat(foundProduct.getSeller().getId()).isEqualTo(savedMember.getId());
 		assertThat(foundProduct.getCategory().getId()).isEqualTo(savedCategory.getId());
+		assertThat(foundProduct.getLatitude()).isEqualTo(tradeLocation.getLatitude());
+		assertThat(foundProduct.getLongtitude()).isEqualTo(tradeLocation.getLongitude());
+		assertThat(foundProduct.getAddress()).isEqualTo(tradeLocation.getAddress());
 
 		// ProductPrice와 ProductImage가 올바르게 저장되었는지 확인
 		assertThat(foundProduct.getPrices()).hasSize(2);

@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProductListRequestDto {
 
-	private String q;
+	private String query;
 	private Long categoryId;
 	private Integer minPrice;
 	private Integer maxPrice;

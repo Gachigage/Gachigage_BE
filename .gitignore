@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### Spring Boot ###
-application.yml
+application.ymlproduct_like
 application.properties
 application-*.yml
 application-*.properties
@@ -53,3 +53,5 @@ application-*.properties
 ## Ai-CLI ##
 GEMINI.md
 
+### Local database ###
+/src/main/resources/data-local.sql

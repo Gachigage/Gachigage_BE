@@ -26,13 +26,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2SuccessHandlerTest {
+	private static final String frontEndUrl = "http://localhost:3000";
 	@Mock
 	private JwtProvider jwtProvider;
-
 	@InjectMocks
 	private OAuth2SuccessHandler successHandler;
-
-	private static final String frontEndUrl = "http://localhost:3000";
 
 	@BeforeEach
 	void setUp() {

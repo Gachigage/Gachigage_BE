@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRegistrationResponseDto {
-    private Long productId;
-    private String message;
+	private Long productId;
 }
