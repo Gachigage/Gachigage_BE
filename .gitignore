@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### Spring Boot ###
-application.ymlproduct_like
+application.yml
 application.properties
 application-*.yml
 application-*.properties

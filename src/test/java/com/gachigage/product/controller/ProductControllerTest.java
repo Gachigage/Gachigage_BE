@@ -33,10 +33,11 @@ import com.gachigage.product.domain.ProductPrice;
 import com.gachigage.product.domain.TradeType;
 import com.gachigage.product.dto.ProductDetailResponseDto;
 import com.gachigage.product.dto.ProductRegistrationRequestDto;
+import com.gachigage.product.service.ProductCategoryService;
 import com.gachigage.product.service.ProductService;
 
 @WebMvcTest(ProductController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class})
 class ProductControllerTest {
 
 	@Autowired
@@ -47,6 +48,9 @@ class ProductControllerTest {
 
 	@MockitoBean
 	private ProductService productService;
+
+	@MockitoBean
+	private ProductCategoryService productCategoryService;
 
 	@MockitoBean
 	private JwtProvider jwtProvider;
