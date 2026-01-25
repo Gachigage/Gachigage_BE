@@ -35,11 +35,15 @@ public class ProductPrice {
 	@Column(name = "price", nullable = false)
 	private int price;
 
+	@Column(name = "status", nullable = false)
+	private PriceTableStatus status;
+
 	@Builder
-	public ProductPrice(Product product, int quantity, int price) {
+	public ProductPrice(Product product, int quantity, int price, PriceTableStatus status) {
 		this.product = product;
 		this.quantity = quantity;
 		this.price = price;
+		this.status = status;
 	}
 
 	public void setProduct(Product product) {

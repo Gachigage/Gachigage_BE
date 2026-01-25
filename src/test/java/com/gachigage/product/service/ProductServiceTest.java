@@ -16,6 +16,7 @@ import com.gachigage.global.WithMockCustomUser;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.RoleType;
+import com.gachigage.product.domain.PriceTableStatus;
 import com.gachigage.product.domain.Product;
 import com.gachigage.product.domain.ProductCategory;
 import com.gachigage.product.domain.TradeType;
@@ -112,6 +113,9 @@ class ProductServiceTest {
 		assertThat(foundProduct.getLatitude()).isEqualTo(tradeLocation.getLatitude());
 		assertThat(foundProduct.getLongtitude()).isEqualTo(tradeLocation.getLongitude());
 		assertThat(foundProduct.getAddress()).isEqualTo(tradeLocation.getAddress());
+
+		assertThat(foundProduct.getPrices().get(0).getStatus()).isEqualTo(PriceTableStatus.ACTIVE);
+		assertThat(foundProduct.getPrices().get(1).getStatus()).isEqualTo(PriceTableStatus.ACTIVE);
 
 		// ProductPrice와 ProductImage가 올바르게 저장되었는지 확인
 		assertThat(foundProduct.getPrices()).hasSize(2);

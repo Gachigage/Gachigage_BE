@@ -14,6 +14,7 @@ import com.gachigage.global.error.CustomException;
 import com.gachigage.image.service.ImageService;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
+import com.gachigage.product.domain.PriceTableStatus;
 import com.gachigage.product.domain.Product;
 import com.gachigage.product.domain.ProductCategory;
 import com.gachigage.product.domain.ProductImage;
@@ -71,6 +72,7 @@ public class ProductService {
 			.map(priceDto -> ProductPrice.builder()
 				.quantity(priceDto.getQuantity())
 				.price(priceDto.getPrice())
+				.status(PriceTableStatus.ACTIVE)
 				.build()).toList();
 
 		List<ProductImage> productImages = imageUrls.stream()

@@ -88,4 +88,5 @@ public class ProductController {
 		List<CategoryResponseDto> categories = productCategoryService.getCategories();
 		return ResponseEntity.ok(ApiResponse.success(categories));
 	}
+
 }
