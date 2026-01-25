@@ -27,25 +27,17 @@ import com.gachigage.product.repository.ProductCategoryRepository;
 import com.gachigage.product.repository.ProductRepository;
 import com.gachigage.product.repository.RegionRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProductService {
+	
 	private final ProductCategoryRepository productCategoryRepository;
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 	private final RegionRepository regionRepository;
 	private final ImageService imageService;
-
-	public ProductService(ProductCategoryRepository productCategoryRepository,
-		ProductRepository productRepository,
-		MemberRepository memberRepository,
-		RegionRepository regionRepository,
-		ImageService imageService) {
-		this.productCategoryRepository = productCategoryRepository;
-		this.productRepository = productRepository;
-		this.memberRepository = memberRepository;
-		this.regionRepository = regionRepository;
-		this.imageService = imageService;
-	}
 
 	@Transactional
 	public Product createProduct(
@@ -63,7 +55,7 @@ public class ProductService {
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 카테고리입니다"));
 
 		Member seller = memberRepository.findById(loginMemberId)
-			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 회원입니다"));
+			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
 
 		// Todo : 시도동으로 외부 API 연동 후 region 설정 _ 이미 존재하는 region인지 확인 필요
 		Region region = regionRepository.save(new Region("서울특별시", "강남구", "역삼동")); // dummy data
