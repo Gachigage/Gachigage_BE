@@ -16,9 +16,9 @@ public class MypageService {
     private final MemberRepository memberRepository;
 
 
-    public MyProfileResponseDto getMyProfile(Long memberId){
+    public MyProfileResponseDto getMyProfile(Long oauthId){
 
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByOauthId(oauthId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         return MyProfileResponseDto.builder()
@@ -29,4 +29,18 @@ public class MypageService {
                 .build();
     }
 
+    @Transactional
+    public void updateNickname(Long oauthId, String newNickname) {
+
+
+        if (memberRepository.existsByNickname(newNickname)) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
+
+
+        Member member = memberRepository.findByOauthId(oauthId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        member.updateNickname(newNickname);
+    }
 }

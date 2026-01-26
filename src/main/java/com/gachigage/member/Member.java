@@ -1,20 +1,15 @@
 package com.gachigage.member;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Builder
 @Getter
@@ -53,4 +48,29 @@ public class Member {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role_type")
 	private RoleType roleType;
+
+
+	@CreatedDate
+	@Column(updatable=false)
+	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	private LocalDateTime updatedAt;
+
+	@PrePersist
+	public void prePersist() {
+		LocalDateTime now = LocalDateTime.now();
+		this.createdAt = now;
+		this.updatedAt = now;
+	}
+
+
+	@PreUpdate
+	public void preUpdate() {
+		this.updatedAt = LocalDateTime.now();
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
 }
