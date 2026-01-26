@@ -172,6 +172,20 @@ public class ProductService {
 		return imageService.uploadImage(files);
 	}
 
+	@Transactional
+	public void deleteProduct(Long productId, Long loginMemberId) {
+		Product product = productRepository.findById(productId)
+			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
+
+		Member member = memberRepository.findMemberByOauthId(loginMemberId)
+			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
+
+		if (!product.getSeller().getOauthId().equals(member.getOauthId())) {
+			throw new CustomException(UNAUTHORIZED_USER, "상품 삭제 권한이 없는 사용자입니다.");
+		}
+		productRepository.delete(product);
+	}
+
 	private List<Product> searchRelatedProducts(
 		Long subCategoryId,
 		String province,

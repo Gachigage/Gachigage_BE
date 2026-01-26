@@ -1,10 +1,12 @@
 package com.gachigage.product.service;
 
+import static com.gachigage.global.error.ErrorCode.*;
 import static com.gachigage.product.domain.PriceTableStatus.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gachigage.global.WithMockCustomUser;
+import com.gachigage.global.error.CustomException;
+import com.gachigage.image.service.ImageService;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.RoleType;
@@ -42,6 +46,9 @@ class ProductServiceTest {
 	private ProductCategoryRepository productCategoryRepository;
 	@Autowired
 	private RegionRepository regionRepository;
+
+	@Autowired
+	private ImageService imageService;
 
 	private Member savedMember;
 	private ProductCategory savedCategory;
@@ -186,4 +193,86 @@ class ProductServiceTest {
 		assertThat(foundProduct.getImages()).hasSize(2);
 		assertThat(foundProduct.getImages().get(0).getImageUrl()).isEqualTo("http://example.com/modified1.jpg");
 	}
+
+	@Test
+	@DisplayName("상품 삭제 - 성공")
+	@WithMockCustomUser
+	void deleteProductSuccess() {
+		// given
+		Region region = new Region("서울특별시", "강남구", "역삼동");
+		regionRepository.save(region);
+
+		Product product = Product.create(null, savedMember, savedCategory, region, "삭제될 상품", "삭제될 상품 설명", 1L,
+			TradeType.DELIVERY, 37.123, 127.123, "삭제될 주소",
+			List.of(ProductPrice.builder().price(1000).quantity(1).status(ACTIVE).build()), List.of());
+		productRepository.save(product);
+
+		// when
+		productService.deleteProduct(product.getId(), savedMember.getOauthId());
+
+		// then
+		Optional<Product> foundProduct = productRepository.findById(product.getId());
+		assertThat(foundProduct).isEmpty();
+	}
+
+	@Test
+	@DisplayName("상품 삭제 - 실패 (상품을 찾을 수 없음)")
+	@WithMockCustomUser
+	void deleteProductNotFound() {
+		// given
+		Long nonExistentProductId = 9999L;
+
+		// when, then
+		assertThatThrownBy(() -> productService.deleteProduct(nonExistentProductId, savedMember.getId()))
+			.isInstanceOf(CustomException.class)
+			.hasFieldOrPropertyWithValue("errorCode", RESOURCE_NOT_FOUND);
+	}
+
+	@Test
+	@DisplayName("상품 삭제 - 실패 (회원을 찾을 수 없음)")
+	void deleteProductUserNotFound() {
+		// given
+		Region region = new Region("서울특별시", "강남구", "역삼동");
+		regionRepository.save(region);
+
+		Product product = Product.create(null, savedMember, savedCategory, region, "삭제될 상품", "삭제될 상품 설명", 1L,
+			TradeType.DELIVERY, 37.123, 127.123, "삭제될 주소",
+			List.of(ProductPrice.builder().price(1000).quantity(1).status(ACTIVE).build()), List.of());
+		productRepository.save(product);
+
+		Long nonExistentMemberId = 8888L;
+
+		// when, then
+		assertThatThrownBy(() -> productService.deleteProduct(product.getId(), nonExistentMemberId))
+			.isInstanceOf(CustomException.class)
+			.hasFieldOrPropertyWithValue("errorCode", USER_NOT_FOUND);
+	}
+
+	@Test
+	@DisplayName("상품 삭제 - 실패 (권한 없음)")
+	void deleteProductUnauthorized() {
+		// given
+		Region region = new Region("서울특별시", "강남구", "역삼동");
+		regionRepository.save(region);
+
+		Product product = Product.create(null, savedMember, savedCategory, region, "다른 사람 상품", "다른 사람 상품 설명", 1L,
+			TradeType.DELIVERY, 37.123, 127.123, "다른 사람 주소",
+			List.of(ProductPrice.builder().price(1000).quantity(1).status(ACTIVE).build()), List.of());
+		productRepository.save(product);
+
+		Member unauthorizedMember = Member.builder()
+			.email("unauthorized@gmail.com")
+			.name("권한없는 테스터")
+			.roleType(RoleType.USER)
+			.birthDate(LocalDate.now())
+			.oauthId(222L) // Different OAuth ID
+			.build();
+		memberRepository.save(unauthorizedMember);
+
+		// when, then
+		assertThatThrownBy(() -> productService.deleteProduct(product.getId(), unauthorizedMember.getOauthId()))
+			.isInstanceOf(CustomException.class)
+			.hasFieldOrPropertyWithValue("errorCode", UNAUTHORIZED_USER);
+	}
 }
+
