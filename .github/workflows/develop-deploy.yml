@@ -47,6 +47,8 @@ jobs:
             cd /${{secrets.SERVER_USER}}/gachigage/backend
             
             rm *-plain.jar
+
+            rm app.jar
             
             mv *.jar app.jar
             
