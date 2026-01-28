@@ -53,3 +53,5 @@ application-*.properties
 ## Ai-CLI ##
 GEMINI.md
 
+### Local database ###
+/src/main/resources/data-local.sql

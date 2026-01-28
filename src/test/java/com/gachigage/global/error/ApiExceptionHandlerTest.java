@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gachigage.global.WithMockCustomUser;
+import com.gachigage.global.config.CustomAuthenticationEntryPoint;
 import com.gachigage.global.config.JwtProvider;
 import com.gachigage.global.config.SecurityConfig;
 import com.gachigage.global.login.service.CustomOAuth2UserService;
@@ -31,6 +32,9 @@ import jakarta.validation.constraints.NotBlank;
 @Import({ApiExceptionHandlerTest.TestController.class, SecurityConfig.class})
 class ApiExceptionHandlerTest {
 
+	@Autowired
+	ObjectMapper objectMapper;
+
 	@MockitoBean
 	private AuthenticationSuccessHandler oAuth2SuccessHandler;
 
@@ -38,42 +42,13 @@ class ApiExceptionHandlerTest {
 	private CustomOAuth2UserService oAuth2UserService;
 
 	@MockitoBean
+	private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
+	@MockitoBean
 	private JwtProvider jwtProvider;
 
 	@Autowired
 	private MockMvc mockMvc;
-
-	@Autowired
-	ObjectMapper objectMapper;
-
-	// 테스트용 DTO
-	static class TestDto {
-		@NotBlank(message = "이름은 필수입니다")
-		public String name;
-
-		@Email(message = "이메일 형식이 아닙니다")
-		public String email;
-	}
-
-	@RestController
-	static class TestController {
-		@GetMapping("/test/custom-exception")
-		public void throwCustomException() {
-			ErrorCode errorCode = ErrorCode.USER_NOT_FOUND;
-			throw new CustomException(errorCode);
-		}
-
-		@PostMapping("/test/validation")
-		public String testValidation(@Valid @RequestBody TestDto dto) throws Exception {
-			// 일부러 빈 값을 보내면 여기 도달하지 못하고 MethodArgumentNotValidException 발생
-			return "";
-		}
-
-		@GetMapping("/test/unexpected-exception")
-		public void throwUnexpectedException() {
-			throw new RuntimeException();
-		}
-	}
 
 	@Test
 	@DisplayName("정의한 CustomException 발생 시 설정한 HttpStatus와 메시지가 반환")
@@ -116,5 +91,34 @@ class ApiExceptionHandlerTest {
 			.andExpect(status().isInternalServerError())
 			.andExpect(jsonPath("$.status").value(500))
 			.andExpect(jsonPath("$.message").value("서버 내부 오류가 발생했습니다."));
+	}
+
+	// 테스트용 DTO
+	static class TestDto {
+		@NotBlank(message = "이름은 필수입니다")
+		public String name;
+
+		@Email(message = "이메일 형식이 아닙니다")
+		public String email;
+	}
+
+	@RestController
+	static class TestController {
+		@GetMapping("/test/custom-exception")
+		public void throwCustomException() {
+			ErrorCode errorCode = ErrorCode.USER_NOT_FOUND;
+			throw new CustomException(errorCode);
+		}
+
+		@PostMapping("/test/validation")
+		public String testValidation(@Valid @RequestBody TestDto dto) throws Exception {
+			// 일부러 빈 값을 보내면 여기 도달하지 못하고 MethodArgumentNotValidException 발생
+			return "";
+		}
+
+		@GetMapping("/test/unexpected-exception")
+		public void throwUnexpectedException() {
+			throw new RuntimeException();
+		}
 	}
 }
