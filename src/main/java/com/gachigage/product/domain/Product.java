@@ -118,23 +118,41 @@ public class Product extends BaseEntity {
 		List<ProductPrice> prices,
 		List<ProductImage> images
 	) {
+
+		validateCategory(category);
+		validateImage(images);
+		validatePriceTable(prices);
+
 		Product product = new Product(
 			id, seller, category, region,
 			title, description, stock, tradeType,
 			latitude, longitude, address
 		);
 
-		if (prices == null || prices.isEmpty()) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
-		}
-
-		if (images.size() > 8) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
-		}
-
 		prices.forEach(product::addPrice);
 		images.forEach(product::addImage);
 		return product;
+	}
+
+	private static void validatePriceTable(List<ProductPrice> priceTable) {
+		if (priceTable == null || priceTable.isEmpty()) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
+		}
+	}
+
+	private static void validateImage(List<ProductImage> images) {
+		if (images.size() > 8) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
+		}
+	}
+
+	private static void validateCategory(ProductCategory category) {
+		if (category.getParent() == null) {
+			if (!category.getName().equals("기타")) {
+				throw new CustomException(ErrorCode.INVALID_INPUT_VALUE,
+					"대분류 카테고리는 기타 카테고리만 선택할 수 있습니다. 하위 카테고리를 입력해주세요.");
+			}
+		}
 	}
 
 	public void modify(

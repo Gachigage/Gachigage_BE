@@ -180,7 +180,6 @@ public class ProductService {
 		String currentProvince = product.getRegion().getProvince();
 		String currentCity = product.getRegion().getCity();
 
-		// TODO : viewCount 증가 로직 관련 test 추가 필요
 		product.increaseVisitCount();
 
 		List<Product> relatedProductsEntities = searchRelatedProducts(

@@ -12,9 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Builder(toBuilder = true)
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetailResponseDto {
@@ -30,7 +32,7 @@ public class ProductDetailResponseDto {
 	private Long stock;
 
 	private List<ProductPriceDto> priceTable;
-	private List<TradeLocationDto> preferredTradeLocations;
+	private TradeLocationDto preferredTradeLocation;
 
 	private Integer viewCount;
 	private Boolean isLiked;
@@ -39,24 +41,11 @@ public class ProductDetailResponseDto {
 
 	public static ProductDetailResponseDto fromEntity(Product product, List<Product> relatedProducts) {
 
-		// TODO : 활성화된 가격 테이블만 필터링하는 로직 추가
-		// List<ProductPriceDto> productpriceDtos = product.getPrices().stream()
-		// 	.filter(price -> price.getStatus() == PriceTableStatus.ACTIVE)
-		// 	.map(price -> ProductPriceDto.builder()
-		// 		.quantity(price.getQuantity())
-		// 		.price(price.getPrice())
-		// 		.build())
-		// 	.toList();
-
-		return ProductDetailResponseDto.builder()
+		ProductDetailResponseDto response = ProductDetailResponseDto.builder()
 			.productId(product.getId())
 			.title(product.getTitle())
 			.detail(product.getDescription())
 			.sellerName(product.getSeller().getName())
-			.category(ProductCategoryDto.builder()
-				.main(product.getCategory().getParent().getName())
-				.sub(product.getCategory().getName())
-				.build())
 			.tradeType(product.getTradeType())
 			.imageUrls(product.getImages().stream()
 				.map(ProductImage::getImageUrl)
@@ -69,17 +58,32 @@ public class ProductDetailResponseDto {
 					.status(price.getStatus())
 					.build())
 				.toList())
-			.preferredTradeLocations(
-				List.of(TradeLocationDto.builder()
+			.preferredTradeLocation(
+				TradeLocationDto.builder()
 					.latitude(product.getLatitude())
 					.longitude(product.getLongtitude())
 					.address(product.getAddress())
-					.build())
+					.build()
 			)
 			.viewCount(product.getVisitCount())
 			.isLiked(false) // Placeholder for actual like status
 			.relatedProducts(RelatedProductsDto.fromEntity(relatedProducts))
 			.build();
+
+		if (product.getCategory().getName().equals("기타")) {
+			response.setCategory(ProductCategoryDto.builder()
+				.mainCategoryId(product.getCategory().getId())
+				.subCategoryId(null)
+				.build());
+			return response;
+		}
+
+		response.setCategory(ProductCategoryDto.builder()
+			.mainCategoryId(product.getCategory().getParent().getId())
+			.subCategoryId(product.getCategory().getId())
+			.build());
+
+		return response;
 	}
 
 	@Getter
@@ -87,8 +91,8 @@ public class ProductDetailResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class ProductCategoryDto {
-		private String main;
-		private String sub;
+		private Long mainCategoryId;
+		private Long subCategoryId;
 	}
 
 	@Getter
