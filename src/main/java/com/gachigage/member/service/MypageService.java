@@ -3,7 +3,6 @@ package com.gachigage.member.service;
 
 import com.gachigage.global.error.CustomException;
 import com.gachigage.global.error.ErrorCode;
-import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.dto.response.MyProfileResponseDto;
 import lombok.RequiredArgsConstructor;

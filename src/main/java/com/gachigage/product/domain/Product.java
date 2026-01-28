@@ -6,7 +6,6 @@ import java.util.List;
 import org.hibernate.annotations.ColumnDefault;
 
 import com.gachigage.global.common.BaseEntity;
-import com.gachigage.member.Member;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
