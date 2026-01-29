@@ -4,6 +4,7 @@ import static com.gachigage.global.error.ErrorCode.*;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ import com.gachigage.product.domain.Region;
 import com.gachigage.product.domain.TradeType;
 import com.gachigage.product.dto.ProductDetailResponseDto;
 import com.gachigage.product.dto.ProductLikeResponseDto;
+import com.gachigage.product.dto.ProductListRequestDto;
+import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.dto.ProductModifyRequestDto;
 import com.gachigage.product.dto.ProductRegistrationRequestDto;
 import com.gachigage.product.repository.ProductCategoryRepository;
@@ -47,6 +50,12 @@ public class ProductService {
 	private final ImageService imageService;
 	private final ProductLikeRepository productLikeRepository;
 	private final NaverMapsClient naverMapsClient;
+
+	@Transactional(readOnly = true)
+	public Page<ProductListResponseDto> getProducts(ProductListRequestDto requestDto) {
+		Pageable pageable = PageRequest.of(requestDto.page(), requestDto.size());
+		return productRepository.search(requestDto, pageable);
+	}
 
 	@Transactional
 	public ProductLikeResponseDto toggleProductLike(Long loginMemberId, Long productId) {

@@ -2,6 +2,7 @@ package com.gachigage.product.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +25,8 @@ import com.gachigage.product.dto.CategoryResponseDto;
 import com.gachigage.product.dto.ProductDetailResponseDto;
 import com.gachigage.product.dto.ProductImageResponseDto;
 import com.gachigage.product.dto.ProductLikeResponseDto;
+import com.gachigage.product.dto.ProductListRequestDto;
+import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.dto.ProductModifyRequestDto;
 import com.gachigage.product.dto.ProductRegistrationRequestDto;
 import com.gachigage.product.dto.ProductRegistrationResponseDto;
@@ -147,4 +151,9 @@ public class ProductController {
 		return ResponseEntity.ok(ApiResponse.success(categories));
 	}
 
+	    @Operation(summary = "상품 서칭 및 필터링", description = "상품 서칭 및 필터링 결과를 조회합니다.")
+	    @GetMapping
+	    public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(ProductListRequestDto requestDto) {
+	        return ResponseEntity.ok(ApiResponse.success(productService.getProducts(requestDto)));
+	    }
 }

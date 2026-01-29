@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.gachigage.product.domain.Product;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, ProductRepositoryCustom {
 
 	@Query("SELECT p FROM Product p "
 		+ "JOIN FETCH p.category pc "
