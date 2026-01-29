@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gachigage.global.error.CustomException;
 import com.gachigage.image.service.ImageService;
 import com.gachigage.member.Member;
@@ -32,9 +33,11 @@ import com.gachigage.product.repository.ProductRepository;
 import com.gachigage.product.repository.RegionRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
 	private final ProductCategoryRepository productCategoryRepository;
@@ -43,6 +46,7 @@ public class ProductService {
 	private final RegionRepository regionRepository;
 	private final ImageService imageService;
 	private final ProductLikeRepository productLikeRepository;
+	private final NaverMapsClient naverMapsClient;
 
 	@Transactional
 	public ProductLikeResponseDto toggleProductLike(Long loginMemberId, Long productId) {
@@ -52,36 +56,22 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
 
-		return productLikeRepository.findByMemberAndProduct(member, product)
-			.map(productLike -> {
-				productLikeRepository.delete(productLike);
-				product.decrementLikeCount();
-				return new ProductLikeResponseDto(false, product.getLikeCount());
-			})
-			.orElseGet(() -> {
-				ProductLike productLike = ProductLike.builder()
-					.member(member)
-					.product(product)
-					.build();
-				productLikeRepository.save(productLike);
-				product.incrementLikeCount();
-				return new ProductLikeResponseDto(true, product.getLikeCount());
-			});
+		return productLikeRepository.findByMemberAndProduct(member, product).map(productLike -> {
+			productLikeRepository.delete(productLike);
+			product.decrementLikeCount();
+			return new ProductLikeResponseDto(false, product.getLikeCount());
+		}).orElseGet(() -> {
+			ProductLike productLike = ProductLike.builder().member(member).product(product).build();
+			productLikeRepository.save(productLike);
+			product.incrementLikeCount();
+			return new ProductLikeResponseDto(true, product.getLikeCount());
+		});
 	}
 
 	@Transactional
-	public Product modifyProduct(
-		Long productId,
-		Long loginMemberId,
-		Long subCategoryId,
-		String title,
-		String detail,
-		Long stock,
-		List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTableDtos,
-		TradeType tradeType,
-		ProductModifyRequestDto.TradeLocationRegistrationDto preferredTradeLocationDto,
-		List<String> imageUrls
-	) {
+	public Product modifyProduct(Long productId, Long loginMemberId, Long subCategoryId, String title, String detail,
+		Long stock, List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTableDtos, TradeType tradeType,
+		ProductModifyRequestDto.TradeLocationRegistrationDto preferredTradeLocationDto, List<String> imageUrls) {
 
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
@@ -101,70 +91,56 @@ public class ProductService {
 				.quantity(priceDto.getQuantity())
 				.price(priceDto.getPrice())
 				.status(priceDto.getStatus())
-				.build()).toList();
+				.build())
+			.toList();
 
 		List<ProductImage> newProductImages = imageUrls.stream()
-			.map(url -> ProductImage.builder()
-				.imageUrl(url)
-				.build()).toList();
+			.map(url -> ProductImage.builder().imageUrl(url).build())
+			.toList();
 
-		product.modify(
-			newCategory,
-			title,
-			detail,
-			stock,
-			tradeType,
-			preferredTradeLocationDto.getLatitude(),
-			preferredTradeLocationDto.getLongitude(),
-			preferredTradeLocationDto.getAddress(),
-			newPrices,
-			newProductImages
-		);
+		product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
+			preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
+			newProductImages);
 
 		return product;
 	}
 
 	@Transactional
-	public Product createProduct(
-		Long memberOauthId,
-		Long subCategoryId,
-		String title,
-		String detail,
-		Long stock,
-		List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTable,
-		TradeType tradeType,
-		ProductRegistrationRequestDto.TradeLocationRegistrationDto preferredTradeLocation,
-		List<String> imageUrls) {
+	public Product createProduct(Long memberOauthId, Long subCategoryId, String title, String detail, Long stock,
+		List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTable, TradeType tradeType,
+		ProductRegistrationRequestDto.TradeLocationRegistrationDto preferredTradeLocation, List<String> imageUrls) {
 
 		ProductCategory category = productCategoryRepository.findById(subCategoryId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 카테고리입니다"));
 		Member seller = memberRepository.findMemberByOauthId(memberOauthId)
 			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
 
-		// Todo : 시도동으로 외부 API 연동 후 region 설정 _ 이미 존재하는 region인지 확인 필요
-		Region region = regionRepository.save(new Region("서울특별시", "강남구", "역삼동")); // dummy data
+		Region region = null;
+		Double longtitude = null;
+		Double latitude = null;
+		String address = null;
+
+		if (preferredTradeLocation != null) {
+			longtitude = preferredTradeLocation.getLongitude();
+			latitude = preferredTradeLocation.getLatitude();
+			address = preferredTradeLocation.getAddress();
+			region = getRegion(longtitude, latitude);
+		}
 
 		List<ProductPrice> priceTables = priceTable.stream()
 			.map(priceDto -> ProductPrice.builder()
 				.quantity(priceDto.getQuantity())
 				.price(priceDto.getPrice())
 				.status(PriceTableStatus.ACTIVE)
-				.build()).toList();
+				.build())
+			.toList();
 
 		List<ProductImage> productImages = imageUrls.stream()
-			.map(url -> ProductImage.builder()
-				.imageUrl(url)
-				.build()).toList();
+			.map(url -> ProductImage.builder().imageUrl(url).build())
+			.toList();
 
-		Product product = Product.create(
-			null,
-			seller, category, region, title, detail, stock, tradeType,
-			preferredTradeLocation.getLatitude(),
-			preferredTradeLocation.getLongitude(),
-			preferredTradeLocation.getAddress(),
-			priceTables,
-			productImages
-		);
+		Product product = Product.create(null, seller, category, region, title, detail, stock, tradeType, latitude,
+			longtitude, address, priceTables, productImages);
 
 		productRepository.save(product);
 		return product;
@@ -182,18 +158,10 @@ public class ProductService {
 
 		product.increaseVisitCount();
 
-		List<Product> relatedProductsEntities = searchRelatedProducts(
-			currentCategoryId,
-			currentProvince,
-			currentCity,
-			productId,
-			PageRequest.of(0, 4)
-		);
+		List<Product> relatedProductsEntities = searchRelatedProducts(currentCategoryId, currentProvince, currentCity,
+			productId, PageRequest.of(0, 4));
 
-		return ProductDetailResponseDto.fromEntity(
-			product,
-			relatedProductsEntities
-		);
+		return ProductDetailResponseDto.fromEntity(product, relatedProductsEntities);
 	}
 
 	public List<String> saveToBucketAndGetImageUrls(List<MultipartFile> files) {
@@ -214,15 +182,67 @@ public class ProductService {
 		productRepository.delete(product);
 	}
 
-	private List<Product> searchRelatedProducts(
-		Long subCategoryId,
-		String province,
-		String city,
-		Long productId,
+	private List<Product> searchRelatedProducts(Long subCategoryId, String province, String city, Long productId,
 		Pageable pageable) {
-		List<Product> products = productRepository
-			.findRelatedProducts(subCategoryId, province, city, productId, pageable); // TODO : refact
-		// TODO : Relatedr 4이하일때 MainCategory로 추가 조회
+		List<Product> products = productRepository.findRelatedProducts(subCategoryId, province, city, productId,
+			pageable); // TODO : refact
+		// TODO : Related 4이하일때 MainCategory로 추가 조회
 		return products;
+	}
+
+	private Region getRegion(double longtitude, double latitude) {
+
+		JsonNode response = naverMapsClient
+			.reverseGeocode(longtitude, latitude)
+			.block();
+
+		log.info("Naver Maps API Response: {}", response);
+
+		if (response == null || !response.has("results") || response.get("results").isEmpty()) {
+			throw new CustomException(RESOURCE_NOT_FOUND, "지역 정보를 찾을 수 없습니다.");
+		}
+
+		JsonNode legalResult = response.get("results").get(0);
+		String lawCode = legalResult.get("code").get("id").asText();
+
+		return regionRepository.findByLawCode(lawCode).orElseGet(() -> createRegionFromApi(legalResult));
+	}
+
+	private Region createRegionFromApi(JsonNode legalResult) {
+
+		String province = legalResult.get("region")
+			.get("area1")
+			.get("name")
+			.asText();
+
+		String area2 = legalResult.get("region")
+			.get("area2")
+			.get("name")
+			.asText();
+
+		String lawCode = legalResult.get("code").get("id").asText();
+
+		String city;
+		String district = null;
+
+		if (area2.contains(" ")) {
+			String[] parts = area2.split(" ");
+			city = parts[0];
+			district = parts[1];
+		} else {
+			city = area2;
+		}
+
+		log.info("Creating Region - lawCode: {}, province: {}, city: {}, district: {}", lawCode, province, city,
+			district);
+
+		Region region = Region.builder()
+			.lawCode(lawCode)
+			.province(province)
+			.city(city)
+			.district(district)
+			.build();
+
+		return regionRepository.save(region);
 	}
 }

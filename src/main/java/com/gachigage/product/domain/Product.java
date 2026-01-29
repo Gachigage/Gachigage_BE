@@ -47,7 +47,7 @@ public class Product extends BaseEntity {
 	private ProductCategory category;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "region_id", nullable = false)
+	@JoinColumn(name = "region_id")
 	private Region region;
 
 	@Column(name = "title", length = 100, nullable = false)
@@ -138,6 +138,9 @@ public class Product extends BaseEntity {
 		if (priceTable == null || priceTable.isEmpty()) {
 			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
 		}
+		if (priceTable.size() > 5) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 가격 정보는 최대 5개까지 등록할 수 있습니다.");
+		}
 	}
 
 	private static void validateImage(List<ProductImage> images) {
@@ -147,7 +150,7 @@ public class Product extends BaseEntity {
 	}
 
 	private static void validateCategory(ProductCategory category) {
-		if (category.getParent() == null) {
+		if (category != null && category.getParent() == null) {
 			if (!category.getName().equals("기타")) {
 				throw new CustomException(ErrorCode.INVALID_INPUT_VALUE,
 					"대분류 카테고리는 기타 카테고리만 선택할 수 있습니다. 하위 카테고리를 입력해주세요.");
