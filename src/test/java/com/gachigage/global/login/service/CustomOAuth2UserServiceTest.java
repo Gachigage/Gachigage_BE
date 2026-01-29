@@ -4,6 +4,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.util.Optional;
 
+import com.gachigage.member.Member;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

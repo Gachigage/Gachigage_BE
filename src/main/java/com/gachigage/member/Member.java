@@ -57,4 +57,12 @@ public class Member extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role_type")
 	private RoleType roleType;
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	public void updateProfileImage(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
 }

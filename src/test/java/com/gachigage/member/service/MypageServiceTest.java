@@ -2,6 +2,7 @@ package com.gachigage.member.service;
 
 import com.gachigage.global.error.CustomException;
 import com.gachigage.global.error.ErrorCode;
+import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.dto.response.MyProfileResponseDto;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +40,7 @@ class MypageServiceTest {
                 .roleType(com.gachigage.member.RoleType.USER)
                 .build();
 
-        given(memberRepository.findByOauthId(oauthId)).willReturn(Optional.of(mockMember));
+        given(memberRepository.findMemberByOauthId(oauthId)).willReturn(Optional.of(mockMember));
 
         MyProfileResponseDto result = mypageService.getMyProfile(oauthId);
 
@@ -52,7 +53,7 @@ class MypageServiceTest {
     void getMyProfile_Fail() {
 
         Long oauthId = 99999L;
-        given(memberRepository.findByOauthId(oauthId)).willReturn(Optional.empty());
+        given(memberRepository.findMemberByOauthId(oauthId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> mypageService.getMyProfile(oauthId))
                 .isInstanceOf(CustomException.class) //
@@ -72,7 +73,7 @@ class MypageServiceTest {
                 .build();
         
 
-        given(memberRepository.findByOauthId(oauthId)).willReturn(Optional.of(mockMember));
+        given(memberRepository.findMemberByOauthId(oauthId)).willReturn(Optional.of(mockMember));
 
         mypageService.updateNickname(oauthId, newNickname);
 
