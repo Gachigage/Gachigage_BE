@@ -49,11 +49,12 @@ class ProductRepositorySearchTest {
 	private ProductCategory categoryDesk;
 	private Region regionGangnam;
 	private Region regionJongno;
+	private Member seller;
 
 	@BeforeEach
 	void setUp() {
 		// 테스트에 필요한 기본 데이터 설정
-		Member seller = memberRepository.save(Member.builder()
+		seller = memberRepository.save(Member.builder()
 			.email("seller@test.com")
 			.name("판매자")
 			.roleType(RoleType.USER)
@@ -115,7 +116,7 @@ class ProductRepositorySearchTest {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// When
-		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
 		// Then: '의자'가 포함된 상품은 3개(사무용 의자 2개, 게이밍 의자 1개)
 		assertThat(result.getTotalElements()).isEqualTo(3);
@@ -135,11 +136,30 @@ class ProductRepositorySearchTest {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// When
-		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
 		// Then: '의자' 카테고리에 속한 상품은 3개
 		assertThat(result.getTotalElements()).isEqualTo(3);
 		assertThat(result.getContent()).allMatch(p -> p.getTitle().contains("의자"));
+	}
+
+	@Test
+	@DisplayName("상위 카테고리로 상품 필터링 (하위 카테고리 포함)")
+	void searchByPrimaryCategory() {
+		// Given: '가구' 카테고리(ID: categoryFurniture.getId())로 검색
+		ProductListRequestDto requestDto = new ProductListRequestDto(null, categoryFurniture.getId(), null, null, null, 0, 10);
+		Pageable pageable = PageRequest.of(0, 10);
+
+		// When
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
+
+		// Then: '가구' 카테고리(의자, 책상)에 속한 모든 상품(2개 의자(사무용, 게이밍), 1개 책상)의 판매 단위가 나와야 함 (총 4개)
+		// 상품1 (의자) -> 2개 (개별, 일괄)
+		// 상품2 (책상) -> 1개 (개별)
+		// 상품3 (의자) -> 1개 (개별)
+		assertThat(result.getTotalElements()).isEqualTo(4);
+		assertThat(result.getContent()).anyMatch(p -> p.getTitle().contains("의자"));
+		assertThat(result.getContent()).anyMatch(p -> p.getTitle().contains("책상"));
 	}
 
 	@Test
@@ -151,7 +171,7 @@ class ProductRepositorySearchTest {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// When
-		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
 		// Then: '원목 책상' 1개만 해당
 		assertThat(result.getTotalElements()).isEqualTo(1);
@@ -168,7 +188,7 @@ class ProductRepositorySearchTest {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// When
-		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
 		// Then: 강남구에 있는 '사무용 의자'(2개)와 '게이밍 의자'(1개) 총 3개
 		assertThat(result.getTotalElements()).isEqualTo(3);
@@ -183,7 +203,7 @@ class ProductRepositorySearchTest {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// When
-		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
 		// Then: '사무용 의자'는 '개별'과 '일괄' 2개의 판매 단위를 가짐
 		assertThat(result.getTotalElements()).isEqualTo(2);
@@ -201,7 +221,7 @@ class ProductRepositorySearchTest {
 		Pageable pageable = PageRequest.of(0, 10);
 
 		// When
-		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+		Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
 		// Then: '사무용 의자' 2개(개별/일괄)만 해당
 		assertThat(result.getTotalElements()).isEqualTo(2);
@@ -214,7 +234,7 @@ class ProductRepositorySearchTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // When
-        Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+        Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
         // Then: 모든 상품의 '개별' 판매 단위만 나와야 함 (사무용 의자 1개, 원목 책상 1개, 게이밍 의자 1개 = 총 3개)
         assertThat(result.getTotalElements()).isEqualTo(3);
@@ -229,7 +249,7 @@ class ProductRepositorySearchTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // When
-        Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+        Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
         // Then: '사무용 의자'의 '일괄' 판매 단위 1개만 나와야 함
         assertThat(result.getTotalElements()).isEqualTo(1);
@@ -244,7 +264,7 @@ class ProductRepositorySearchTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // When
-        Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable);
+        Page<ProductListResponseDto> result = productRepository.search(requestDto, pageable, seller.getId());
 
         // Then: 모든 상품의 모든 판매 단위가 나와야 함 (사무용 의자 2개, 원목 책상 1개, 게이밍 의자 1개 = 총 4개)
         assertThat(result.getTotalElements()).isEqualTo(4);

@@ -4,6 +4,7 @@ import static com.gachigage.product.domain.QProduct.product;
 import static com.gachigage.product.domain.QProductImage.productImage;
 import static com.gachigage.product.domain.QProductPrice.productPrice;
 import static com.gachigage.product.domain.QRegion.region;
+import static com.gachigage.product.domain.QProductLike.productLike;
 
 import java.util.List;
 
@@ -17,18 +18,25 @@ import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.dto.QProductListResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
+import com.gachigage.product.domain.ProductCategory;
+import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
+	private final ProductCategoryRepository productCategoryRepository;
 
 	@Override
-	public Page<ProductListResponseDto> search(ProductListRequestDto requestDto, Pageable pageable) {
+	public Page<ProductListResponseDto> search(ProductListRequestDto requestDto, Pageable pageable, Long loginMemberId) {
 		List<ProductListResponseDto> content = queryFactory
 			.select(new QProductListResponseDto(
 				product.id,
@@ -41,7 +49,20 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 					.otherwise("개별"),
 				product.tradeType,
 				productPrice.price,
-				product.likeCount,
+				productPrice.quantity,
+				product.visitCount,
+				new CaseBuilder()
+					.when(loginMemberId != null ?
+						JPAExpressions
+							.selectOne()
+							.from(productLike)
+							.where(productLike.product.eq(product).and(productLike.member.oauthId.eq(loginMemberId)))
+							.exists()
+						:
+						Expressions.asBoolean(false).isTrue() // Always returns a BooleanExpression (false)
+					)
+					.then(true)
+					.otherwise(false),
 				product.createdAt
 			))
 			.from(productPrice)
@@ -82,7 +103,31 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 	}
 
 	private BooleanExpression categoryEq(Long categoryId) {
-		return categoryId != null ? product.category.id.eq(categoryId) : null;
+		if (categoryId == null) {
+			return null;
+		}
+
+		ProductCategory category = productCategoryRepository.findById(categoryId).orElse(null);
+		if (category == null) {
+			return null;
+		}
+
+		if (category.getParent() == null) { // This is a main category
+			Set<Long> descendantCategoryIds = new HashSet<>();
+			descendantCategoryIds.add(categoryId); // Include the main category itself
+			getAllDescendantCategoryIds(categoryId, descendantCategoryIds);
+			return product.category.id.in(descendantCategoryIds);
+		} else { // This is a subcategory
+			return product.category.id.eq(categoryId);
+		}
+	}
+
+	private void getAllDescendantCategoryIds(Long parentId, Set<Long> descendantCategoryIds) {
+		List<ProductCategory> children = productCategoryRepository.findByParentId(parentId);
+		for (ProductCategory child : children) {
+			descendantCategoryIds.add(child.getId());
+			getAllDescendantCategoryIds(child.getId(), descendantCategoryIds);
+		}
 	}
 
 	private BooleanExpression priceBetween(ProductListRequestDto.PriceArrangeDto priceArrange) {

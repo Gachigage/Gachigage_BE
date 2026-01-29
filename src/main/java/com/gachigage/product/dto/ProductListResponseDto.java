@@ -22,13 +22,15 @@ public class ProductListResponseDto {
 	private String group;
 	private TradeType tradeType;
 	private int price;
-	private int likeCount;
+	private int quantity;
+	private int viewCount;
+	private boolean isLiked;
 	private LocalDateTime createdAt;
 
 	@QueryProjection
 	public ProductListResponseDto(Long productId, String title, String mainImageUrl, String province, String city,
 		String group,
-		TradeType tradeType, int price, int likeCount, LocalDateTime createdAt) {
+		TradeType tradeType, int price, int quantity, int viewCount, boolean isLiked, LocalDateTime createdAt) {
 		this.productId = productId;
 		this.title = title;
 		this.mainImageUrl = mainImageUrl;
@@ -37,7 +39,9 @@ public class ProductListResponseDto {
 		this.group = group;
 		this.tradeType = tradeType;
 		this.price = price;
-		this.likeCount = likeCount;
+		this.quantity = quantity;
+		this.viewCount = viewCount;
+		this.isLiked = isLiked;
 		this.createdAt = createdAt;
 	}
 }

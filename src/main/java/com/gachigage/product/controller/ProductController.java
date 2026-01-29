@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -151,9 +150,16 @@ public class ProductController {
 		return ResponseEntity.ok(ApiResponse.success(categories));
 	}
 
-	    @Operation(summary = "상품 서칭 및 필터링", description = "상품 서칭 및 필터링 결과를 조회합니다.")
-	    @GetMapping
-	    public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(ProductListRequestDto requestDto) {
-	        return ResponseEntity.ok(ApiResponse.success(productService.getProducts(requestDto)));
-	    }
+	@Operation(summary = "상품 서칭 및 필터링", description = "상품 서칭 및 필터링 결과를 조회합니다.")
+	@GetMapping
+	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(ProductListRequestDto requestDto,
+		@AuthenticationPrincipal User user) {
+
+		Long loginMemberId = null;
+		if (user != null) {
+			loginMemberId = Long.parseLong(user.getUsername());
+		}
+
+		return ResponseEntity.ok(ApiResponse.success(productService.getProducts(requestDto, loginMemberId)));
+	}
 }

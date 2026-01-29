@@ -90,21 +90,21 @@ class ProductServiceTest {
 
         ProductListResponseDto responseDto = new ProductListResponseDto(
                 1L, "테스트 상품", "http://example.com/image.jpg",
-                "서울특별시", "강남구", "일괄", TradeType.DELIVERY, 1000, 0, LocalDateTime.now()
+                "서울특별시", "강남구", "일괄", TradeType.DELIVERY, 1000, 5, 0, false, LocalDateTime.now()
         );
         Page<ProductListResponseDto> mockPage = new PageImpl<>(List.of(responseDto), pageable, 1);
 
-        when(productRepository.search(any(ProductListRequestDto.class), any(Pageable.class)))
+        when(productRepository.search(any(ProductListRequestDto.class), any(Pageable.class), any(Long.class)))
                 .thenReturn(mockPage);
 
         // When
-        Page<ProductListResponseDto> result = productService.getProducts(requestDto);
+        Page<ProductListResponseDto> result = productService.getProducts(requestDto, 1L);
 
         // Then
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         assertEquals(responseDto.getTitle(), result.getContent().get(0).getTitle());
-        verify(productRepository, times(1)).search(requestDto, pageable);
+        verify(productRepository, times(1)).search(any(ProductListRequestDto.class), any(Pageable.class), any(Long.class));
     }
 
     @Test

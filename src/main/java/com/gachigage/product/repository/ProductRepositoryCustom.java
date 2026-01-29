@@ -7,5 +7,5 @@ import com.gachigage.product.dto.ProductListRequestDto;
 import com.gachigage.product.dto.ProductListResponseDto;
 
 public interface ProductRepositoryCustom {
-	Page<ProductListResponseDto> search(ProductListRequestDto requestDto, Pageable pageable);
+	Page<ProductListResponseDto> search(ProductListRequestDto requestDto, Pageable pageable, Long loginMemberId);
 }

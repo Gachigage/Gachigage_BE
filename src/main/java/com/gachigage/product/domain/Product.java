@@ -119,6 +119,14 @@ public class Product extends BaseEntity {
 		List<ProductImage> images
 	) {
 
+		if (latitude != null) {
+			isValidLatitude(latitude);
+		}
+
+		if (longitude != null) {
+			isValidLongtitude(longitude);
+		}
+
 		validateCategory(category);
 		validateImage(images);
 		validatePriceTable(prices);
@@ -129,17 +137,21 @@ public class Product extends BaseEntity {
 			latitude, longitude, address
 		);
 
-		if (prices == null || prices.isEmpty()) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
-		}
-
-		if (images.size() > 8) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
-		}
-
 		prices.forEach(product::addPrice);
 		images.forEach(product::addImage);
 		return product;
+	}
+
+	private static void isValidLongtitude(Double coordinate) {
+		if (coordinate < -180 || coordinate > 180) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "경도는 -180에서 180 사이의 값이어야 합니다.");
+		}
+	}
+
+	private static void isValidLatitude(Double coordinate) {
+		if (coordinate < -90 || coordinate > 90) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "위도는 -90에서 90 사이의 값이어야 합니다.");
+		}
 	}
 
 	private static void validatePriceTable(List<ProductPrice> priceTable) {

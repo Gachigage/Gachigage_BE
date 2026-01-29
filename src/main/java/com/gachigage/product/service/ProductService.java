@@ -52,9 +52,9 @@ public class ProductService {
 	private final NaverMapsClient naverMapsClient;
 
 	@Transactional(readOnly = true)
-	public Page<ProductListResponseDto> getProducts(ProductListRequestDto requestDto) {
+	public Page<ProductListResponseDto> getProducts(ProductListRequestDto requestDto, Long loginMemberId) {
 		Pageable pageable = PageRequest.of(requestDto.page(), requestDto.size());
-		return productRepository.search(requestDto, pageable);
+		return productRepository.search(requestDto, pageable, loginMemberId);
 	}
 
 	@Transactional
