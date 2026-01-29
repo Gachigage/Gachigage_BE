@@ -129,6 +129,14 @@ public class Product extends BaseEntity {
 			latitude, longitude, address
 		);
 
+		if (prices == null || prices.isEmpty()) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
+		}
+
+		if (images.size() > 8) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
+		}
+
 		prices.forEach(product::addPrice);
 		images.forEach(product::addImage);
 		return product;

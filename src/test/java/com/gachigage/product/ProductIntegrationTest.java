@@ -143,9 +143,9 @@ public class ProductIntegrationTest {
 
 				.andExpect(jsonPath("$.data.sellerName").value(testMember.getName()))
 
-				.andExpect(jsonPath("$.data.category.main").value(mainCategory.getName()))
+				.andExpect(jsonPath("$.data.category.mainCategoryId").value(mainCategory.getId()))
 
-				.andExpect(jsonPath("$.data.category.sub").value(subCategory.getName()))
+				.andExpect(jsonPath("$.data.category.subCategoryId").value(subCategory.getId()))
 
 				.andExpect(jsonPath("$.data.tradeType").value(TradeType.DIRECT.name()))
 
@@ -167,11 +167,11 @@ public class ProductIntegrationTest {
 
 				.andExpect(jsonPath("$.data.priceTable[1].status").value(PriceTableStatus.ACTIVE.name()))
 
-				.andExpect(jsonPath("$.data.preferredTradeLocations[0].latitude").value(37.123456))
+				.andExpect(jsonPath("$.data.preferredTradeLocation.latitude").value(37.123456))
 
-				.andExpect(jsonPath("$.data.preferredTradeLocations[0].longitude").value(127.654321))
+				.andExpect(jsonPath("$.data.preferredTradeLocation.longitude").value(127.654321))
 
-				.andExpect(jsonPath("$.data.preferredTradeLocations[0].address").value("서울 강남구 역삼동"))
+				.andExpect(jsonPath("$.data.preferredTradeLocation.address").value("서울 강남구 역삼동"))
 
 				.andExpect(jsonPath("$.data.viewCount").value(1))
 
