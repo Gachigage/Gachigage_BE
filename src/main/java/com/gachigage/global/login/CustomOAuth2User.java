@@ -9,6 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import com.gachigage.member.Member;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
