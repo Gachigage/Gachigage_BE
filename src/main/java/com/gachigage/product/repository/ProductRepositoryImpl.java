@@ -1,18 +1,21 @@
 package com.gachigage.product.repository;
 
-import static com.gachigage.product.domain.QProduct.product;
-import static com.gachigage.product.domain.QProductImage.productImage;
-import static com.gachigage.product.domain.QProductPrice.productPrice;
-import static com.gachigage.product.domain.QRegion.region;
-import static com.gachigage.product.domain.QProductLike.productLike;
+import static com.gachigage.product.domain.QProduct.*;
+import static com.gachigage.product.domain.QProductImage.*;
+import static com.gachigage.product.domain.QProductLike.*;
+import static com.gachigage.product.domain.QProductPrice.*;
+import static com.gachigage.product.domain.QRegion.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.gachigage.product.domain.ProductCategory;
 import com.gachigage.product.dto.ProductListRequestDto;
 import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.dto.QProductListResponseDto;
@@ -23,10 +26,6 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
-import com.gachigage.product.domain.ProductCategory;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,7 +35,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 	private final ProductCategoryRepository productCategoryRepository;
 
 	@Override
-	public Page<ProductListResponseDto> search(ProductListRequestDto requestDto, Pageable pageable, Long loginMemberId) {
+	public Page<ProductListResponseDto> search(ProductListRequestDto requestDto, Pageable pageable,
+		Long loginMemberId) {
 		List<ProductListResponseDto> content = queryFactory
 			.select(new QProductListResponseDto(
 				product.id,
@@ -52,12 +52,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 				productPrice.quantity,
 				product.visitCount,
 				new CaseBuilder()
-					.when(loginMemberId != null ?
-						JPAExpressions
-							.selectOne()
-							.from(productLike)
-							.where(productLike.product.eq(product).and(productLike.member.oauthId.eq(loginMemberId)))
-							.exists()
+					.when(loginMemberId != null ? JPAExpressions
+						.selectOne()
+						.from(productLike)
+						.where(productLike.product.eq(product).and(productLike.member.oauthId.eq(loginMemberId)))
+						.exists()
 						:
 						Expressions.asBoolean(false).isTrue() // Always returns a BooleanExpression (false)
 					)
@@ -74,7 +73,9 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 				categoryEq(requestDto.categoryId()),
 				priceBetween(requestDto.priceArrange()),
 				locationEq(requestDto.locationDto()),
-				groupEq(requestDto.group())
+				groupEq(requestDto.group()),
+				stockGtZero(),
+				priceTableStatusActive()
 			)
 			.orderBy(product.createdAt.desc())
 			.offset(pageable.getOffset())
@@ -91,7 +92,9 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 				categoryEq(requestDto.categoryId()),
 				priceBetween(requestDto.priceArrange()),
 				locationEq(requestDto.locationDto()),
-				groupEq(requestDto.group())
+				groupEq(requestDto.group()),
+				stockGtZero(),
+				priceTableStatusActive()
 			)
 			.fetchOne();
 
@@ -117,7 +120,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			descendantCategoryIds.add(categoryId); // Include the main category itself
 			getAllDescendantCategoryIds(categoryId, descendantCategoryIds);
 			return product.category.id.in(descendantCategoryIds);
-		} else { // This is a subcategory
+		} else {
 			return product.category.id.eq(categoryId);
 		}
 	}
@@ -155,4 +158,13 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 		}
 		return null;
 	}
+
+	private BooleanExpression stockGtZero() {
+		return product.stock.gt(0);
+	}
+
+	private BooleanExpression priceTableStatusActive() {
+		return productPrice.status.eq(com.gachigage.product.domain.PriceTableStatus.ACTIVE);
+	}
+
 }
