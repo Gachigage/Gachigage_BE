@@ -1,6 +1,7 @@
 package com.gachigage.member.controller;
 
 import com.gachigage.member.dto.response.MyProfileResponseDto;
+import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.member.service.MypageService;
 import org.junit.jupiter.api.DisplayName;
@@ -43,15 +44,14 @@ public class MypageControllerTest {
     @DisplayName("프로필 이미지 변경 테스트 - 성공하면 200 OK")
     @WithMockUser(username = "12345678") // 가짜로 로그인한 척 (ID: 12345678)
     void updateProfileImageTest() throws Exception {
-        // given: 가짜 파일과 예상되는 응답 준비
+
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.jpg", "image/jpeg", "test image content".getBytes()
         );
 
-        MyProfileResponseDto responseDto = MyProfileResponseDto.builder()
-                .userId(1L)
-                .name("테스트유저")
-                .profileImage("https://s3.bucket/new-image.jpg")
+
+        ProfileImageResponseDto responseDto = ProfileImageResponseDto.builder()
+                .imageUrl("https://s3.bucket/new-image.jpg")
                 .build();
 
         // 서비스가 호출되면 이렇게 응답하라고 설정 (Stubbing)
@@ -60,11 +60,11 @@ public class MypageControllerTest {
         // when & then: API 찌르기
         mockMvc.perform(multipart("/users/me/profile-image")
                         .file(file)
-                        .with(request -> { request.setMethod("PUT"); return request; }) // Multipart는 기본이 POST라 PUT으로 강제 변경
+                        .with(request -> { request.setMethod("PUT"); return request; })
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(print()) // 결과를 콘솔에 출력
                 .andExpect(status().isOk()) // 200 OK인지 확인
-                .andExpect(jsonPath("$.data.profileImage").value("https://s3.bucket/new-image.jpg")); // 응답 값 확인
+                .andExpect(jsonPath("$.data.imageUrl").value("https://s3.bucket/new-image.jpg")); // 응답 값 확인
     }
 
     @Test

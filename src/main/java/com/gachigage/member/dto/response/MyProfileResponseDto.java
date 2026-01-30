@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -15,5 +17,7 @@ public class MyProfileResponseDto {
     private String name;
     private String nickname;
     private String profileImage;
+    private String email;
+    private LocalDateTime createdAt;
 
 }

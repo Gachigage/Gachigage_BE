@@ -3,6 +3,7 @@ package com.gachigage.member.controller;
 import com.gachigage.global.ApiResponse;
 import com.gachigage.member.dto.request.NicknameUpdateRequestDto;
 import com.gachigage.member.dto.response.MyProfileResponseDto;
+import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.member.service.MypageService;
 import jakarta.validation.Valid;
@@ -45,13 +46,13 @@ public class MypageController {
 
 
     @PutMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<MyProfileResponseDto> updateProfileImage(@AuthenticationPrincipal UserDetails user,
+    public ApiResponse<ProfileImageResponseDto> updateProfileImage(@AuthenticationPrincipal UserDetails user,
                                                                 @RequestPart(value = "file") MultipartFile file) {
 
         Long oauthId = Long.valueOf(user.getUsername());
 
 
-        MyProfileResponseDto response = mypageService.updateProfileImage(oauthId, file);
+        ProfileImageResponseDto response = mypageService.updateProfileImage(oauthId, file);
 
         return ApiResponse.success(response);
     }
@@ -83,4 +84,6 @@ public class MypageController {
 
         return ApiResponse.success(response);
     }
+
+
 }

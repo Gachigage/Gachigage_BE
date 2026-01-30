@@ -6,6 +6,7 @@ import com.gachigage.image.service.ImageService;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.dto.response.MyProfileResponseDto;
+import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.product.domain.Product;
 import com.gachigage.product.domain.ProductLike;
@@ -42,6 +43,8 @@ private final ProductLikeRepository productLikeRepository;
                 .name(member.getName())
                 .nickname(member.getNickname())
                 .profileImage(member.getImageUrl())
+                .email(member.getEmail())
+                .createdAt(member.getCreatedAt())
                 .build();
     }
 
@@ -54,27 +57,7 @@ private final ProductLikeRepository productLikeRepository;
     }
 
 
-    @Transactional
-    public MyProfileResponseDto updateProfileImage(Long oauthId, MultipartFile file) {
-        Member member = memberRepository.findMemberByOauthId(oauthId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 파일이 비어있지 않으면 업로드 진행
-        if (file != null && !file.isEmpty()) {
-            List<String> imageUrls = imageService.uploadImage(List.of(file));
-
-            String imageUrl = imageUrls.get(0);
-            member.updateProfileImage(imageUrl);
-        }
-
-
-        return MyProfileResponseDto.builder()
-                .userId(member.getId())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .profileImage(member.getImageUrl())
-                .build();
-    }
 
     public Page<TradeResponseDto> getPurchaseHistory(Long oauthId, Pageable pageable) {
         Member member = memberRepository.findMemberByOauthId(oauthId)
@@ -138,7 +121,24 @@ private final ProductLikeRepository productLikeRepository;
                     .price(representativePrice)
                     .thumbnailUrl(thumbnailUrl)
                     .tradeDate(null)
+                    .status(String.valueOf(product.getStatus()))
                     .build();
         });
+    }
+    @Transactional
+    public ProfileImageResponseDto updateProfileImage(Long oauthId, MultipartFile file) {
+        Member member = memberRepository.findMemberByOauthId(oauthId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+
+        String imageUrl = imageService.uploadImage(List.of(file)).get(0);
+
+
+
+        member.updateProfileImage(imageUrl);
+
+        return ProfileImageResponseDto.builder()
+                .imageUrl(imageUrl)
+                .build();
     }
 }

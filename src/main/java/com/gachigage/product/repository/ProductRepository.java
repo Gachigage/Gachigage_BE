@@ -2,6 +2,8 @@ package com.gachigage.product.repository;
 
 import java.util.List;
 
+import com.gachigage.product.domain.ProductStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +29,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 		@Param("city") String city,
 		@Param("productId") Long productId,
 		Pageable pageable);
+
+	Page<Product> findAllBySellerId(Long sellerId, Pageable pageable);
+
+	Page<Product> findAllBySellerIdAndStatus(Long sellerId, ProductStatus status, Pageable pageable);
 }
