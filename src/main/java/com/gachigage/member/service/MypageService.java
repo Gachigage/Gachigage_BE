@@ -121,13 +121,12 @@ private final ProductLikeRepository productLikeRepository;
         return likes.map(like -> {
             var product = like.getProduct();
 
-            // 1. 대표 이미지 꺼내기 (없으면 null)
+
             String thumbnailUrl = (product.getImages() != null && !product.getImages().isEmpty())
-                    ? product.getImages().get(0).getUrl()
+                    ? product.getImages().get(0).getImageUrl()
                     : null;
 
-            // 2. 대표 가격 꺼내기 (prices 리스트에서 첫 번째 가격 or 0원)
-            // 보통 가격 정책은 1개 가격이 제일 먼저 등록되거나 중요하므로 첫 번째를 가져옵니다.
+
             int representativePrice = (product.getPrices() != null && !product.getPrices().isEmpty())
                     ? product.getPrices().get(0).getPrice()
                     : 0;
@@ -136,10 +135,9 @@ private final ProductLikeRepository productLikeRepository;
                     .tradeId(null)
                     .productId(product.getId())
                     .title(product.getTitle())
-                    .price(representativePrice) // 👈 여기서 뽑아낸 가격을 넣습니다!
+                    .price(representativePrice)
                     .thumbnailUrl(thumbnailUrl)
                     .tradeDate(null)
-                    .status(String.valueOf(product.getStatus()))
                     .build();
         });
     }
