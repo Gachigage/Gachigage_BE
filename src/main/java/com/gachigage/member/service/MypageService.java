@@ -8,6 +8,9 @@ import com.gachigage.member.MemberRepository;
 import com.gachigage.member.dto.response.MyProfileResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.product.domain.Product;
+import com.gachigage.product.domain.ProductLike;
+import com.gachigage.product.repository.ProductLikeRepository;
+import com.gachigage.product.repository.ProductRepository;
 import com.gachigage.trade.domain.Trade;
 import com.gachigage.trade.repository.TradeRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,8 @@ public class MypageService {
     private final MemberRepository memberRepository;
     private final TradeRepository tradeRepository;
     private final ImageService imageService;
+private final ProductLikeRepository productLikeRepository;
+
 
     public MyProfileResponseDto getMyProfile(Long oauthId){
         Member member = memberRepository.findMemberByOauthId(oauthId)
@@ -106,5 +111,36 @@ public class MypageService {
                 .tradeDate(trade.getCreatedAt())
                 .status(trade.getStatus())
                 .build();
+    }
+    public Page<TradeResponseDto> getMyLikes(Long oauthId, Pageable pageable) {
+        Member member = memberRepository.findMemberByOauthId(oauthId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        Page<ProductLike> likes = productLikeRepository.findAllByMemberId(member.getId(), pageable);
+
+        return likes.map(like -> {
+            var product = like.getProduct();
+
+            // 1. 대표 이미지 꺼내기 (없으면 null)
+            String thumbnailUrl = (product.getImages() != null && !product.getImages().isEmpty())
+                    ? product.getImages().get(0).getUrl()
+                    : null;
+
+            // 2. 대표 가격 꺼내기 (prices 리스트에서 첫 번째 가격 or 0원)
+            // 보통 가격 정책은 1개 가격이 제일 먼저 등록되거나 중요하므로 첫 번째를 가져옵니다.
+            int representativePrice = (product.getPrices() != null && !product.getPrices().isEmpty())
+                    ? product.getPrices().get(0).getPrice()
+                    : 0;
+
+            return TradeResponseDto.builder()
+                    .tradeId(null)
+                    .productId(product.getId())
+                    .title(product.getTitle())
+                    .price(representativePrice) // 👈 여기서 뽑아낸 가격을 넣습니다!
+                    .thumbnailUrl(thumbnailUrl)
+                    .tradeDate(null)
+                    .status(String.valueOf(product.getStatus()))
+                    .build();
+        });
     }
 }
