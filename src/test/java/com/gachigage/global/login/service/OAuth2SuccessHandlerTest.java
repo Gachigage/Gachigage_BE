@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.*;
 import java.io.IOException;
 import java.util.Map;
 
+import com.gachigage.member.Member;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
