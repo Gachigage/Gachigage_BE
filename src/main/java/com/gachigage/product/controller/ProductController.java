@@ -114,8 +114,15 @@ public class ProductController {
 
 	@Operation(summary = "상품 상세 조회", description = "상품의 상세 정보 및 관련 상품을 조회합니다.")
 	@GetMapping("/{productId}")
-	public ResponseEntity<ApiResponse<ProductDetailResponseDto>> getProductDetails(@PathVariable Long productId) {
-		ProductDetailResponseDto response = productService.getProductDetail(productId);
+	public ResponseEntity<ApiResponse<ProductDetailResponseDto>> getProductDetails(@PathVariable Long productId,
+		@AuthenticationPrincipal User user) {
+
+		Long loginMemberId = null;
+		if (user != null) {
+			loginMemberId = Long.parseLong(user.getUsername());
+		}
+
+		ProductDetailResponseDto response = productService.getProductDetail(productId, loginMemberId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 

@@ -213,7 +213,7 @@ class ProductControllerTest {
 				.relatedProducts(relatedProductsDto)
 				.build();
 
-		given(productService.getProductDetail(anyLong())).willReturn(mockResponseDto);
+		given(productService.getProductDetail(anyLong(),anyLong())).willReturn(mockResponseDto);
 
 		// when & then
 		mockMvc.perform(MockMvcRequestBuilders.get("/products/{productId}", productId)

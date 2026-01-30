@@ -39,7 +39,7 @@ public class ProductDetailResponseDto {
 
 	private RelatedProductsDto relatedProducts;
 
-	public static ProductDetailResponseDto fromEntity(Product product, List<Product> relatedProducts) {
+	public static ProductDetailResponseDto fromEntity(Product product, boolean isProductLiked,  List<RelatedProductDto> relatedProducts) {
 
 		ProductDetailResponseDto response = ProductDetailResponseDto.builder()
 			.productId(product.getId())
@@ -66,7 +66,7 @@ public class ProductDetailResponseDto {
 					.build()
 			)
 			.viewCount(product.getVisitCount())
-			.isLiked(false) // Placeholder for actual like status
+			.isLiked(isProductLiked)
 			.relatedProducts(RelatedProductsDto.fromEntity(relatedProducts))
 			.build();
 
@@ -124,10 +124,7 @@ public class ProductDetailResponseDto {
 		private int size;
 		private List<RelatedProductDto> products;
 
-		public static RelatedProductsDto fromEntity(List<Product> relatedProducts) {
-			List<RelatedProductDto> relatedProductDtos = relatedProducts.stream()
-				.map(RelatedProductDto::fromEntity)
-				.toList();
+		public static RelatedProductsDto fromEntity(List<RelatedProductDto> relatedProductDtos) {
 
 			return RelatedProductsDto.builder()
 				.size(relatedProductDtos.size())
@@ -145,13 +142,14 @@ public class ProductDetailResponseDto {
 		private Long productId;
 		private String title;
 		private String thumbnailUrl;
-		private Integer price; // Reverted to 'price'
-		private Integer quantity; // Reverted to 'quantity'
-		private String province; // Re-added
-		private String city;     // Re-added
-		private Integer viewCount; // Re-added
+		private Integer price;
+		private Integer quantity;
+		private String province;
+		private String city;
+		private Integer viewCount;
+		private Boolean isLiked;
 
-		public static RelatedProductDto fromEntity(Product product) {
+		public static RelatedProductDto fromEntity(Product product, boolean isLiked) {
 
 			ProductPrice minQuantityProdcutPrice = product.getPrices().stream()
 				.min((p1, p2) -> Integer.compare(p1.getQuantity(), p2.getQuantity()))
@@ -163,6 +161,7 @@ public class ProductDetailResponseDto {
 				.productId(product.getId())
 				.title(product.getTitle())
 				.thumbnailUrl(thumbnailUrl)
+				.isLiked(isLiked)
 				.price(minQuantityProdcutPrice.getPrice())
 				.quantity(minQuantityProdcutPrice.getQuantity())
 				.province(product.getRegion().getProvince())

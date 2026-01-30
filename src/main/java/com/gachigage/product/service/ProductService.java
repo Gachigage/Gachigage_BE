@@ -3,6 +3,8 @@ package com.gachigage.product.service;
 import static com.gachigage.global.error.ErrorCode.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -158,23 +160,72 @@ public class ProductService {
 		return product;
 	}
 
-	@Transactional(readOnly = true)
-	public ProductDetailResponseDto getProductDetail(Long productId) {
+	@Transactional
+	public ProductDetailResponseDto getProductDetail(Long productId, Long loginMemberId) {
 
+		// 1. 상품 조회
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
 
-		Long currentCategoryId = product.getCategory().getId();
-		String currentProvince = product.getRegion().getProvince();
-		String currentCity = product.getRegion().getCity();
-
+		// 2. 조회수 증가 (쓰기 트랜잭션이므로 readOnly 제거)
 		product.increaseVisitCount();
 
-		List<Product> relatedProductsEntities = searchRelatedProducts(currentCategoryId, currentProvince, currentCity,
-			productId, PageRequest.of(0, 4));
+		// 3. 연관 상품 조회
+		List<Product> relatedProducts = searchRelatedProducts(
+			product.getCategory().getId(),
+			product.getRegion().getProvince(),
+			product.getRegion().getCity(),
+			productId,
+			PageRequest.of(0, 4)
+		);
 
-		return ProductDetailResponseDto.fromEntity(product, relatedProductsEntities);
+		// 4. 로그인 사용자 조회 (한 번만)
+		Member member = null;
+		if (loginMemberId != null) {
+			member = memberRepository.findMemberByOauthId(loginMemberId)
+				.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
+		}
+
+		// 5. 현재 상품 좋아요 여부
+		boolean isProductLiked = false;
+		if (member != null) {
+			isProductLiked = productLikeRepository
+				.findByMemberAndProduct(member, product)
+				.isPresent();
+		}
+
+		// 6. 연관 상품 좋아요 목록 한 번에 조회
+		Set<Long> likedRelatedProductIds;
+
+		if (member != null && !relatedProducts.isEmpty()) {
+			likedRelatedProductIds = productLikeRepository
+				.findAllByMemberAndProductIn(member, relatedProducts)
+				.stream()
+				.map(productLike -> productLike.getProduct().getId())
+				.collect(Collectors.toSet());
+		} else {
+			likedRelatedProductIds = Set.of();
+		}
+
+		// 7. 연관 상품 DTO 변환 (순수 map)
+		List<ProductDetailResponseDto.RelatedProductDto> relatedProductDtos =
+			relatedProducts.stream()
+				.map(relatedProduct ->
+					ProductDetailResponseDto.RelatedProductDto.fromEntity(
+						relatedProduct,
+						likedRelatedProductIds.contains(relatedProduct.getId())
+					)
+				)
+				.collect(Collectors.toList());
+
+		// 8. 최종 DTO 반환
+		return ProductDetailResponseDto.fromEntity(
+			product,
+			isProductLiked,
+			relatedProductDtos
+		);
 	}
+
 
 	public List<String> saveToBucketAndGetImageUrls(List<MultipartFile> files) {
 		return imageService.uploadImage(files);
