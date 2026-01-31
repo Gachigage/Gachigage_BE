@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -47,8 +48,11 @@ public class ChatRoom {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
+	@Lob
+	@Column(name = "last_message")
 	private String lastMessage;
 
+	@Column(name = "last_message_time")
 	private LocalDateTime lastMessageTime;
 
 	@Column(name = "buyer_last_read_message_id")

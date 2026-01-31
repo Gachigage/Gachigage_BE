@@ -1,4 +1,4 @@
-package com.gachigage.chat;
+package com.gachigage.chat.service;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;

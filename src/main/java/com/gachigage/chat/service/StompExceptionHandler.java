@@ -1,4 +1,4 @@
-package com.gachigage.chat;
+package com.gachigage.chat.service;
 
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.simp.annotation.SendToUser;

@@ -46,9 +46,6 @@ public class ChatMessage {
 	@Lob
 	private String content;
 
-	@Column(name = "is_read")
-	private boolean isRead;
-
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "messsage_type")
 	private ChatMessageType messageType;

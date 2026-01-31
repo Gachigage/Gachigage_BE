@@ -110,8 +110,7 @@ public class ChatService {
 			.chatRoom(chatRoom)
 			.sender(sender)
 			.messageType(ChatMessageType.TEXT)
-			.content(messageRequestDto.getMessage())
-			.isRead(false)
+			.content(messageRequestDto.getContent())
 			.createdAt(LocalDateTime.now())
 			.build();
 

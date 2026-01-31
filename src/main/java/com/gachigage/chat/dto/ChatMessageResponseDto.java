@@ -32,7 +32,6 @@ public class ChatMessageResponseDto {
 			.content(chatMessage.getContent())
 			.sendAt(chatMessage.getCreatedAt())
 			.senderId(chatMessage.getSender().getOauthId())
-			.isRead(chatMessage.isRead())
 			.messageType(chatMessage.getMessageType())
 			.build();
 	}

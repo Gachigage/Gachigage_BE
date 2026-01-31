@@ -15,7 +15,7 @@ public class ChatMessageRequestDto {
 
 	private String senderNickname;
 
-	private String message;
+	private String content;
 
 	private ChatMessageType messageType;
 
