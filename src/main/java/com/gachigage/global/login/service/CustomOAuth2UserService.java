@@ -15,7 +15,7 @@ import com.gachigage.global.login.CustomOAuth2User;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.RoleType;
-
+import com.gachigage.member.Member;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

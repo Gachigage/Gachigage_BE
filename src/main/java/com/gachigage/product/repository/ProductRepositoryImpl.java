@@ -167,4 +167,27 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 		return productPrice.status.eq(com.gachigage.product.domain.PriceTableStatus.ACTIVE);
 	}
 
+	@Override
+	public List<com.gachigage.product.domain.Product> findRelatedProducts(Long categoryId, String province, String city,
+		Long productId, Pageable pageable) {
+
+		BooleanExpression predicate = product.category.id.eq(categoryId)
+			.and(product.id.ne(productId));
+
+		if (province != null && city != null) {
+			predicate = predicate.and(region.province.eq(province)
+				.and(region.city.eq(city)));
+		}
+
+		return queryFactory
+			.selectFrom(product)
+			.join(product.region, region).fetchJoin()
+			.join(product.category).fetchJoin()
+			.where(predicate)
+			.orderBy(product.createdAt.desc())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
+	}
+
 }

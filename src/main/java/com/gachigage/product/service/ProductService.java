@@ -171,10 +171,11 @@ public class ProductService {
 		product.increaseVisitCount();
 
 		// 3. 연관 상품 조회
+		Region region = product.getRegion();
 		List<Product> relatedProducts = searchRelatedProducts(
 			product.getCategory().getId(),
-			product.getRegion().getProvince(),
-			product.getRegion().getCity(),
+			region != null ? region.getProvince() : null,
+			region != null ? region.getCity() : null,
 			productId,
 			PageRequest.of(0, 4)
 		);
@@ -247,8 +248,7 @@ public class ProductService {
 
 	private List<Product> searchRelatedProducts(Long subCategoryId, String province, String city, Long productId,
 		Pageable pageable) {
-		List<Product> products = productRepository.findRelatedProducts(subCategoryId, province, city, productId,
-			pageable); // TODO : refact
+		List<Product> products = productRepository.findRelatedProducts(subCategoryId, province, city, productId, pageable); // TODO : refact
 		// TODO : Related 4이하일때 MainCategory로 추가 조회
 		return products;
 	}

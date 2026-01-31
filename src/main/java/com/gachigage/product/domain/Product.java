@@ -86,6 +86,11 @@ public class Product extends BaseEntity {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductPrice> prices = new ArrayList<>();
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	@ColumnDefault("'SELLING'") // DB에 들어갈 기본값
+	private ProductStatus status;
+
 	private Product(Long id, Member seller, ProductCategory category, Region region,
 		String title, String description, Long stock, TradeType tradeType,
 		Double latitude, Double longtitude, String address) {
@@ -136,6 +141,15 @@ public class Product extends BaseEntity {
 			title, description, stock, tradeType,
 			latitude, longitude, address
 		);
+
+		if (prices == null || prices.isEmpty()) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
+		}
+
+		if (images.size() > 8) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
+		}
+		product.status = ProductStatus.SELLING;
 
 		prices.forEach(product::addPrice);
 		images.forEach(product::addImage);
