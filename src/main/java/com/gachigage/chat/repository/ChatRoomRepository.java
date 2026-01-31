@@ -1,5 +1,6 @@
 package com.gachigage.chat.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 	boolean existsMemberInRoom(@Param("chatRoomId") Long chatRoomId, @Param("oauthId") Long memberOauthId);
 
 	Optional<ChatRoom> findByProductAndBuyer(Product product, Member buyer);
+
+	@Query("SELECT cr FROM ChatRoom cr " + "JOIN FETCH cr.product p " + "JOIN FETCH cr.buyer b "
+		+ "JOIN FETCH cr.seller s " + "WHERE b.oauthId = :userOauthId OR s.oauthId = :userOauthId "
+		+ "ORDER BY cr.lastMessageTime DESC")
+	List<ChatRoom> findMyChatRooms(@Param("userOauthId") Long userOauthId);
 }
