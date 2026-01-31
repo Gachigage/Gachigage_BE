@@ -62,7 +62,7 @@ public class ProductDetailResponseDto {
 			.preferredTradeLocation(
 				TradeLocationDto.builder()
 					.latitude(product.getLatitude())
-					.longitude(product.getLongtitude())
+					.longitude(product.getLongitude())
 					.address(product.getAddress())
 					.build()
 			)

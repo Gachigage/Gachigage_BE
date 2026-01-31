@@ -130,15 +130,15 @@ public class ProductService {
 			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
 
 		Region region = null;
-		Double longtitude = null;
+		Double longitude = null;
 		Double latitude = null;
 		String address = null;
 
 		if (preferredTradeLocation != null) {
-			longtitude = preferredTradeLocation.getLongitude();
+			longitude = preferredTradeLocation.getLongitude();
 			latitude = preferredTradeLocation.getLatitude();
 			address = preferredTradeLocation.getAddress();
-			region = getRegion(longtitude, latitude);
+			region = getRegion(longitude, latitude);
 		}
 
 		List<ProductPrice> priceTables = priceTable.stream()
@@ -154,7 +154,7 @@ public class ProductService {
 			.toList();
 
 		Product product = Product.create(null, seller, category, region, title, detail, stock, tradeType, latitude,
-			longtitude, address, priceTables, productImages);
+			longitude, address, priceTables, productImages);
 
 		productRepository.save(product);
 		return product;
@@ -253,10 +253,10 @@ public class ProductService {
 		return products;
 	}
 
-	private Region getRegion(double longtitude, double latitude) {
+	private Region getRegion(double longitude, double latitude) {
 
 		JsonNode response = naverMapsClient
-			.reverseGeocode(longtitude, latitude)
+			.reverseGeocode(longitude, latitude)
 			.block();
 
 		log.info("Naver Maps API Response: {}", response);

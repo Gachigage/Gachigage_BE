@@ -244,7 +244,7 @@ public class ProductDomainUnitTest {
 		assertThat(product.getStock()).isEqualTo(50L);
 		assertThat(product.getTradeType()).isEqualTo(TradeType.DELIVERY);
 		assertThat(product.getLatitude()).isEqualTo(37.0);
-		assertThat(product.getLongtitude()).isEqualTo(127.0);
+		assertThat(product.getLongitude()).isEqualTo(127.0);
 		assertThat(product.getAddress()).isEqualTo("New Address");
 		assertThat(product.getPrices()).containsExactly(newPrice1);
 		assertThat(product.getImages()).containsExactly(newImage1);

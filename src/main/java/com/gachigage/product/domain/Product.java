@@ -74,8 +74,8 @@ public class Product extends BaseEntity {
 	@Column(name = "latitude")
 	private Double latitude;
 
-	@Column(name = "longtitude")
-	private Double longtitude;
+	@Column(name = "longitude")
+	private Double longitude;
 
 	@Column(name = "address", length = 255)
 	private String address;
@@ -93,7 +93,7 @@ public class Product extends BaseEntity {
 
 	private Product(Long id, Member seller, ProductCategory category, Region region,
 		String title, String description, Long stock, TradeType tradeType,
-		Double latitude, Double longtitude, String address) {
+		Double latitude, Double longitude, String address) {
 
 		this.id = id;
 		this.seller = seller;
@@ -104,7 +104,7 @@ public class Product extends BaseEntity {
 		this.stock = stock;
 		this.tradeType = tradeType;
 		this.latitude = latitude;
-		this.longtitude = longtitude;
+		this.longitude = longitude;
 		this.address = address;
 	}
 
@@ -129,7 +129,7 @@ public class Product extends BaseEntity {
 		}
 
 		if (longitude != null) {
-			isValidLongtitude(longitude);
+			isValidLongitude(longitude);
 		}
 
 		validateCategory(category);
@@ -156,7 +156,7 @@ public class Product extends BaseEntity {
 		return product;
 	}
 
-	private static void isValidLongtitude(Double coordinate) {
+	private static void isValidLongitude(Double coordinate) {
 		if (coordinate < -180 || coordinate > 180) {
 			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "경도는 -180에서 180 사이의 값이어야 합니다.");
 		}
@@ -210,7 +210,7 @@ public class Product extends BaseEntity {
 		this.stock = stock;
 		this.tradeType = tradeType;
 		this.latitude = latitude;
-		this.longtitude = longitude;
+		this.longitude = longitude;
 		this.address = address;
 
 		changePrices(newPrices);
