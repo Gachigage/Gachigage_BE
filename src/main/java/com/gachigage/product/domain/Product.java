@@ -47,7 +47,7 @@ public class Product extends BaseEntity {
 	private ProductCategory category;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "region_id", nullable = false)
+	@JoinColumn(name = "region_id")
 	private Region region;
 
 	@Column(name = "title", length = 100, nullable = false)
@@ -74,8 +74,8 @@ public class Product extends BaseEntity {
 	@Column(name = "latitude")
 	private Double latitude;
 
-	@Column(name = "longtitude")
-	private Double longtitude;
+	@Column(name = "longitude")
+	private Double longitude;
 
 	@Column(name = "address", length = 255)
 	private String address;
@@ -93,7 +93,7 @@ public class Product extends BaseEntity {
 
 	private Product(Long id, Member seller, ProductCategory category, Region region,
 		String title, String description, Long stock, TradeType tradeType,
-		Double latitude, Double longtitude, String address) {
+		Double latitude, Double longitude, String address) {
 
 		this.id = id;
 		this.seller = seller;
@@ -104,7 +104,7 @@ public class Product extends BaseEntity {
 		this.stock = stock;
 		this.tradeType = tradeType;
 		this.latitude = latitude;
-		this.longtitude = longtitude;
+		this.longitude = longitude;
 		this.address = address;
 	}
 
@@ -123,6 +123,19 @@ public class Product extends BaseEntity {
 		List<ProductPrice> prices,
 		List<ProductImage> images
 	) {
+
+		if (latitude != null) {
+			isValidLatitude(latitude);
+		}
+
+		if (longitude != null) {
+			isValidLongitude(longitude);
+		}
+
+		validateCategory(category);
+		validateImage(images);
+		validatePriceTable(prices);
+
 		Product product = new Product(
 			id, seller, category, region,
 			title, description, stock, tradeType,
@@ -137,9 +150,46 @@ public class Product extends BaseEntity {
 			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
 		}
 		product.status = ProductStatus.SELLING;
+
 		prices.forEach(product::addPrice);
 		images.forEach(product::addImage);
 		return product;
+	}
+
+	private static void isValidLongitude(Double coordinate) {
+		if (coordinate < -180 || coordinate > 180) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "경도는 -180에서 180 사이의 값이어야 합니다.");
+		}
+	}
+
+	private static void isValidLatitude(Double coordinate) {
+		if (coordinate < -90 || coordinate > 90) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "위도는 -90에서 90 사이의 값이어야 합니다.");
+		}
+	}
+
+	private static void validatePriceTable(List<ProductPrice> priceTable) {
+		if (priceTable == null || priceTable.isEmpty()) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
+		}
+		if (priceTable.size() > 5) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 가격 정보는 최대 5개까지 등록할 수 있습니다.");
+		}
+	}
+
+	private static void validateImage(List<ProductImage> images) {
+		if (images.size() > 8) {
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
+		}
+	}
+
+	private static void validateCategory(ProductCategory category) {
+		if (category != null && category.getParent() == null) {
+			if (!category.getName().equals("기타")) {
+				throw new CustomException(ErrorCode.INVALID_INPUT_VALUE,
+					"대분류 카테고리는 기타 카테고리만 선택할 수 있습니다. 하위 카테고리를 입력해주세요.");
+			}
+		}
 	}
 
 	public void modify(
@@ -160,7 +210,7 @@ public class Product extends BaseEntity {
 		this.stock = stock;
 		this.tradeType = tradeType;
 		this.latitude = latitude;
-		this.longtitude = longitude;
+		this.longitude = longitude;
 		this.address = address;
 
 		changePrices(newPrices);

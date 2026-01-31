@@ -1,5 +1,6 @@
 package com.gachigage.product.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,10 @@ import com.gachigage.product.domain.ProductLike;
 @Repository
 public interface ProductLikeRepository extends JpaRepository<ProductLike, Long> {
 	Optional<ProductLike> findByMemberAndProduct(Member member, Product product);
+
+	Optional<ProductLike> findByMemberOauthIdAndProduct(Long memberOauthId, Product product);
+
+	List<ProductLike> findAllByMemberAndProductIn(Member member, List<Product> products);
 
 	Page<ProductLike> findAllByMemberId(Long memberId, Pageable pageable);
 }

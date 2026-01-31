@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.gachigage.global.error.CustomException;
+import com.gachigage.global.error.ErrorCode;
+
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -50,7 +53,7 @@ public class ObjectStorageImageUploader implements ImageUploader {
 			return ENDPOINT + "/" + bucketName + "/" + objectKey;
 
 		} catch (Exception e) {
-			throw new IllegalStateException("Object Storage 이미지 업로드 실패", e);
+			throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED, e.getMessage());
 		}
 	}
 
@@ -72,7 +75,7 @@ public class ObjectStorageImageUploader implements ImageUploader {
 	private String extractExtension(String filename) {
 		int index = filename.lastIndexOf(".");
 		if (index == -1) {
-			throw new IllegalArgumentException("파일 확장자가 없습니다.");
+			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "파일 확장자가 없습니다.");
 		}
 		return filename.substring(index);
 	}
