@@ -227,7 +227,6 @@ public class ProductService {
 		);
 	}
 
-
 	public List<String> saveToBucketAndGetImageUrls(List<MultipartFile> files) {
 		return imageService.uploadImage(files);
 	}
@@ -248,7 +247,8 @@ public class ProductService {
 
 	private List<Product> searchRelatedProducts(Long subCategoryId, String province, String city, Long productId,
 		Pageable pageable) {
-		List<Product> products = productRepository.findRelatedProducts(subCategoryId, province, city, productId, pageable); // TODO : refact
+		List<Product> products = productRepository.findRelatedProducts(subCategoryId, province, city, productId,
+			pageable); // TODO : refact
 		// TODO : Related 4이하일때 MainCategory로 추가 조회
 		return products;
 	}

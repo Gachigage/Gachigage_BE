@@ -39,7 +39,8 @@ public class ProductDetailResponseDto {
 
 	private RelatedProductsDto relatedProducts;
 
-	public static ProductDetailResponseDto fromEntity(Product product, boolean isProductLiked,  List<RelatedProductDto> relatedProducts) {
+	public static ProductDetailResponseDto fromEntity(Product product, boolean isProductLiked,
+		List<RelatedProductDto> relatedProducts) {
 
 		ProductDetailResponseDto response = ProductDetailResponseDto.builder()
 			.productId(product.getId())
