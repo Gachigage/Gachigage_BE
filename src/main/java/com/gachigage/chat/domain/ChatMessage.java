@@ -2,10 +2,13 @@ package com.gachigage.chat.domain;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import com.gachigage.member.Member;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -15,11 +18,18 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "chat_message")
+@EntityListeners(AuditingEntityListener.class)
 public class ChatMessage {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +47,7 @@ public class ChatMessage {
 	private String content;
 
 	@Column(name = "is_read")
-	private byte isRead;
+	private boolean isRead;
 
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "messsage_type")

@@ -7,9 +7,11 @@ import java.util.Objects;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.gachigage.chat.domain.ChatMessage;
 import com.gachigage.chat.domain.ChatMessageType;
 import com.gachigage.chat.domain.ChatRoom;
-import com.gachigage.chat.dto.ChatMessageDto;
+import com.gachigage.chat.dto.ChatMessageRequestDto;
+import com.gachigage.chat.dto.ChatMessageResponseDto;
 import com.gachigage.chat.dto.ChatRoomCreateRequestDto;
 import com.gachigage.chat.dto.ChatRoomCreateResponseDto;
 import com.gachigage.chat.dto.ChatRoomResponseDto;
@@ -97,12 +99,29 @@ public class ChatService {
 		}).toList();
 	}
 
-	public void processMessage(ChatMessageDto messageDto) {
-		if (ChatMessageType.ENTER.equals(messageDto.getMessageType())) {
-			messageDto.setMessage(messageDto.getSenderNickname() + "님이 입장하셨습니다.");
-		}
+	public void processMessage(ChatMessageRequestDto messageRequestDto, Long memberOauthId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(messageRequestDto.getChatRoomId())
+			.orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
 
-		template.convertAndSend("/sub/chat/room/" + messageDto.getChatRoomId(), messageDto);
+		Member sender = memberRepository.findMemberByOauthId(memberOauthId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		ChatMessage chatMessage = ChatMessage.builder()
+			.chatRoom(chatRoom)
+			.sender(sender)
+			.messageType(ChatMessageType.TEXT)
+			.content(messageRequestDto.getMessage())
+			.isRead(false)
+			.createdAt(LocalDateTime.now())
+			.build();
+
+		chatMessageRepository.save(chatMessage);
+		chatRoom.updateLastMessage(chatMessage);
+		chatRoom.updateLastReadMessageId(sender.getOauthId(), chatMessage.getId());
+
+		ChatMessageResponseDto responseDto = ChatMessageResponseDto.from(chatMessage);
+
+		template.convertAndSend("/sub/chat/room/" + chatRoom.getId(), responseDto);
 	}
 
 	public boolean isMemberInRoom(Long memberOauthId, Long chatRoomId) {

@@ -3,12 +3,14 @@ package com.gachigage.chat.domain;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.gachigage.member.Member;
 import com.gachigage.product.domain.Product;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +29,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "chatroom")
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class ChatRoom {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,5 +64,13 @@ public class ChatRoom {
 	public void updateLastMessage(ChatMessage lastMessage) {
 		this.lastMessage = lastMessage.getContent();
 		this.lastMessageTime = lastMessage.getCreatedAt();
+	}
+
+	public void updateLastReadMessageId(Long memberOauthId, Long chatMessageId) {
+		if (this.seller.getOauthId().equals(memberOauthId)) {
+			this.sellerLastReadMessageId = chatMessageId;
+		} else if (this.buyer.getOauthId().equals(memberOauthId)) {
+			this.buyerLastReadMessageId = chatMessageId;
+		}
 	}
 }
