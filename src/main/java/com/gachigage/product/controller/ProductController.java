@@ -2,6 +2,7 @@ package com.gachigage.product.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,8 @@ import com.gachigage.product.dto.CategoryResponseDto;
 import com.gachigage.product.dto.ProductDetailResponseDto;
 import com.gachigage.product.dto.ProductImageResponseDto;
 import com.gachigage.product.dto.ProductLikeResponseDto;
+import com.gachigage.product.dto.ProductListRequestDto;
+import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.dto.ProductModifyRequestDto;
 import com.gachigage.product.dto.ProductRegistrationRequestDto;
 import com.gachigage.product.dto.ProductRegistrationResponseDto;
@@ -111,8 +114,15 @@ public class ProductController {
 
 	@Operation(summary = "상품 상세 조회", description = "상품의 상세 정보 및 관련 상품을 조회합니다.")
 	@GetMapping("/{productId}")
-	public ResponseEntity<ApiResponse<ProductDetailResponseDto>> getProductDetails(@PathVariable Long productId) {
-		ProductDetailResponseDto response = productService.getProductDetail(productId);
+	public ResponseEntity<ApiResponse<ProductDetailResponseDto>> getProductDetails(@PathVariable Long productId,
+		@AuthenticationPrincipal User user) {
+
+		Long loginMemberId = null;
+		if (user != null) {
+			loginMemberId = Long.parseLong(user.getUsername());
+		}
+
+		ProductDetailResponseDto response = productService.getProductDetail(productId, loginMemberId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
@@ -147,4 +157,16 @@ public class ProductController {
 		return ResponseEntity.ok(ApiResponse.success(categories));
 	}
 
+	@Operation(summary = "상품 서칭 및 필터링", description = "상품 서칭 및 필터링 결과를 조회합니다.")
+	@GetMapping
+	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(ProductListRequestDto requestDto,
+		@AuthenticationPrincipal User user) {
+
+		Long loginMemberId = null;
+		if (user != null) {
+			loginMemberId = Long.parseLong(user.getUsername());
+		}
+
+		return ResponseEntity.ok(ApiResponse.success(productService.getProducts(requestDto, loginMemberId)));
+	}
 }

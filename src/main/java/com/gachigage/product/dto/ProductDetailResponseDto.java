@@ -12,9 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Builder(toBuilder = true)
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetailResponseDto {
@@ -30,33 +32,21 @@ public class ProductDetailResponseDto {
 	private Long stock;
 
 	private List<ProductPriceDto> priceTable;
-	private List<TradeLocationDto> preferredTradeLocations;
+	private TradeLocationDto preferredTradeLocation;
 
 	private Integer viewCount;
 	private Boolean isLiked;
 
 	private RelatedProductsDto relatedProducts;
 
-	public static ProductDetailResponseDto fromEntity(Product product, List<Product> relatedProducts) {
+	public static ProductDetailResponseDto fromEntity(Product product, boolean isProductLiked,
+		List<RelatedProductDto> relatedProducts) {
 
-		// TODO : 활성화된 가격 테이블만 필터링하는 로직 추가
-		// List<ProductPriceDto> productpriceDtos = product.getPrices().stream()
-		// 	.filter(price -> price.getStatus() == PriceTableStatus.ACTIVE)
-		// 	.map(price -> ProductPriceDto.builder()
-		// 		.quantity(price.getQuantity())
-		// 		.price(price.getPrice())
-		// 		.build())
-		// 	.toList();
-
-		return ProductDetailResponseDto.builder()
+		ProductDetailResponseDto response = ProductDetailResponseDto.builder()
 			.productId(product.getId())
 			.title(product.getTitle())
 			.detail(product.getDescription())
 			.sellerName(product.getSeller().getName())
-			.category(ProductCategoryDto.builder()
-				.main(product.getCategory().getParent().getName())
-				.sub(product.getCategory().getName())
-				.build())
 			.tradeType(product.getTradeType())
 			.imageUrls(product.getImages().stream()
 				.map(ProductImage::getImageUrl)
@@ -69,17 +59,32 @@ public class ProductDetailResponseDto {
 					.status(price.getStatus())
 					.build())
 				.toList())
-			.preferredTradeLocations(
-				List.of(TradeLocationDto.builder()
+			.preferredTradeLocation(
+				TradeLocationDto.builder()
 					.latitude(product.getLatitude())
-					.longitude(product.getLongtitude())
+					.longitude(product.getLongitude())
 					.address(product.getAddress())
-					.build())
+					.build()
 			)
 			.viewCount(product.getVisitCount())
-			.isLiked(false) // Placeholder for actual like status
+			.isLiked(isProductLiked)
 			.relatedProducts(RelatedProductsDto.fromEntity(relatedProducts))
 			.build();
+
+		if (product.getCategory().getName().equals("기타")) {
+			response.setCategory(ProductCategoryDto.builder()
+				.mainCategoryId(product.getCategory().getId())
+				.subCategoryId(null)
+				.build());
+			return response;
+		}
+
+		response.setCategory(ProductCategoryDto.builder()
+			.mainCategoryId(product.getCategory().getParent().getId())
+			.subCategoryId(product.getCategory().getId())
+			.build());
+
+		return response;
 	}
 
 	@Getter
@@ -87,8 +92,8 @@ public class ProductDetailResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class ProductCategoryDto {
-		private String main;
-		private String sub;
+		private Long mainCategoryId;
+		private Long subCategoryId;
 	}
 
 	@Getter
@@ -120,10 +125,7 @@ public class ProductDetailResponseDto {
 		private int size;
 		private List<RelatedProductDto> products;
 
-		public static RelatedProductsDto fromEntity(List<Product> relatedProducts) {
-			List<RelatedProductDto> relatedProductDtos = relatedProducts.stream()
-				.map(RelatedProductDto::fromEntity)
-				.toList();
+		public static RelatedProductsDto fromEntity(List<RelatedProductDto> relatedProductDtos) {
 
 			return RelatedProductsDto.builder()
 				.size(relatedProductDtos.size())
@@ -141,13 +143,14 @@ public class ProductDetailResponseDto {
 		private Long productId;
 		private String title;
 		private String thumbnailUrl;
-		private Integer price; // Reverted to 'price'
-		private Integer quantity; // Reverted to 'quantity'
-		private String province; // Re-added
-		private String city;     // Re-added
-		private Integer viewCount; // Re-added
+		private Integer price;
+		private Integer quantity;
+		private String province;
+		private String city;
+		private Integer viewCount;
+		private Boolean isLiked;
 
-		public static RelatedProductDto fromEntity(Product product) {
+		public static RelatedProductDto fromEntity(Product product, boolean isLiked) {
 
 			ProductPrice minQuantityProdcutPrice = product.getPrices().stream()
 				.min((p1, p2) -> Integer.compare(p1.getQuantity(), p2.getQuantity()))
@@ -159,6 +162,7 @@ public class ProductDetailResponseDto {
 				.productId(product.getId())
 				.title(product.getTitle())
 				.thumbnailUrl(thumbnailUrl)
+				.isLiked(isLiked)
 				.price(minQuantityProdcutPrice.getPrice())
 				.quantity(minQuantityProdcutPrice.getQuantity())
 				.province(product.getRegion().getProvince())
