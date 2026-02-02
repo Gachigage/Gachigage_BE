@@ -56,6 +56,10 @@ public class ChatService {
 			.map(chatRoom -> ChatRoomCreateResponseDto.builder()
 				.chatRoomId(chatRoom.getId())
 				.productId(chatRoom.getProduct().getId())
+				.sellerNickname(chatRoom.getSeller().getNickname())
+				.sellerImageUrl(chatRoom.getSeller().getImageUrl())
+				.buyerNickname(chatRoom.getBuyer().getNickname())
+				.buyerImageUrl(chatRoom.getBuyer().getImageUrl())
 				.build())
 			.orElseGet(() -> {
 				ChatRoom chatRoom = ChatRoom.builder()
@@ -72,6 +76,10 @@ public class ChatService {
 				return ChatRoomCreateResponseDto.builder()
 					.chatRoomId(chatRoom.getId())
 					.productId(chatRoom.getProduct().getId())
+					.sellerNickname(chatRoom.getSeller().getNickname())
+					.sellerImageUrl(chatRoom.getSeller().getImageUrl())
+					.buyerNickname(chatRoom.getBuyer().getNickname())
+					.buyerImageUrl(chatRoom.getBuyer().getImageUrl())
 					.build();
 			});
 	}
