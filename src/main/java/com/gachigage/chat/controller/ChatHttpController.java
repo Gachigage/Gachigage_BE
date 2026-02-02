@@ -43,13 +43,17 @@ public class ChatHttpController {
 			ApiResponse.success(chatService.createOrFindRoom(requestDto, Long.parseLong(user.getUsername()))));
 	}
 
+	@Operation(summary = "내 채팅방 일괄 조회 ", description = "유저 정보를 받아 해당 유저 채팅방을 일괄로 간략하게 조회한 리스트를 반환합니다.")
 	@GetMapping("/rooms")
-	public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyRooms(@AuthenticationPrincipal User user) {
+	public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyRooms(
+		@Parameter(hidden = true) @AuthenticationPrincipal User user) {
 		return ResponseEntity.ok(ApiResponse.success(chatService.getMyChatRooms(Long.parseLong(user.getUsername()))));
 	}
 
+	@Operation(summary = "채팅방 단건 조회", description = "채팅방 ID를 받아 채팅방의 메세지를 Slice 형태로 생성하고 반환합니다.")
 	@GetMapping("/roooms/{chatRoomId}/messages")
-	public ResponseEntity<ApiResponse<Slice<ChatMessageResponseDto>>> getMessages(@AuthenticationPrincipal User user,
+	public ResponseEntity<ApiResponse<Slice<ChatMessageResponseDto>>> getMessages(
+		@Parameter(hidden = true) @AuthenticationPrincipal User user,
 		@PathVariable Long chatRoomId, @RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "20") int size) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
