@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -97,6 +99,22 @@ public class ChatService {
 				.unreadCount(unreadCount)
 				.build();
 		}).toList();
+	}
+
+	public Slice<ChatMessageResponseDto> getChatMessages(Long chatRoomId, Pageable pageable, Long userOauthId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+			.orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
+
+		if (!chatRoom.getBuyer().getOauthId().equals(userOauthId) && !chatRoom.getSeller()
+			.getOauthId()
+			.equals(userOauthId)) {
+			throw new CustomException(ErrorCode.ACCESS_DENIED, "이 채팅방에 접근 권한이 없습니다.");
+		}
+
+		Slice<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(chatRoomId,
+			pageable);
+
+		return messages.map(ChatMessageResponseDto::from);
 	}
 
 	public void processMessage(ChatMessageRequestDto messageRequestDto, Long memberOauthId) {
