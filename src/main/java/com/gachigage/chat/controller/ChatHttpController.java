@@ -51,7 +51,7 @@ public class ChatHttpController {
 	}
 
 	@Operation(summary = "채팅방 단건 조회", description = "채팅방 ID를 받아 채팅방의 메세지를 Slice 형태로 생성하고 반환합니다.")
-	@GetMapping("/roooms/{chatRoomId}/messages")
+	@GetMapping("/rooms/{chatRoomId}/messages")
 	public ResponseEntity<ApiResponse<Slice<ChatMessageResponseDto>>> getMessages(
 		@Parameter(hidden = true) @AuthenticationPrincipal User user,
 		@PathVariable Long chatRoomId, @RequestParam(defaultValue = "0") int page,
