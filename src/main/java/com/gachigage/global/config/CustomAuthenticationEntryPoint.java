@@ -11,7 +11,9 @@ import com.gachigage.global.error.ErrorCode;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
@@ -24,6 +26,12 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 		AuthenticationException authException) {
+		log.warn("EntryPoint: method={} requestURI={} contextPath={} servletPath={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			request.getContextPath(),
+			request.getServletPath()
+		);
 		resolver.resolveException(request, response, null, new CustomException(ErrorCode.UNAUTHORIZED));
 	}
 }

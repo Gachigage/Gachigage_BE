@@ -47,7 +47,7 @@ public class ChatMessage {
 	private String content;
 
 	@Enumerated(value = EnumType.STRING)
-	@Column(name = "messsage_type")
+	@Column(name = "message_type")
 	private ChatMessageType messageType;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
