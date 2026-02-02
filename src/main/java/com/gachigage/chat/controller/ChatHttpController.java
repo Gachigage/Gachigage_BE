@@ -2,15 +2,22 @@ package com.gachigage.chat.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gachigage.chat.dto.ChatMessageResponseDto;
 import com.gachigage.chat.dto.ChatRoomCreateRequestDto;
 import com.gachigage.chat.dto.ChatRoomCreateResponseDto;
 import com.gachigage.chat.dto.ChatRoomResponseDto;
@@ -36,8 +43,22 @@ public class ChatHttpController {
 			ApiResponse.success(chatService.createOrFindRoom(requestDto, Long.parseLong(user.getUsername()))));
 	}
 
+	@Operation(summary = "내 채팅방 일괄 조회 ", description = "유저 정보를 받아 해당 유저 채팅방을 일괄로 간략하게 조회한 리스트를 반환합니다.")
 	@GetMapping("/rooms")
-	public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyRooms(@AuthenticationPrincipal User user) {
+	public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyRooms(
+		@Parameter(hidden = true) @AuthenticationPrincipal User user) {
 		return ResponseEntity.ok(ApiResponse.success(chatService.getMyChatRooms(Long.parseLong(user.getUsername()))));
+	}
+
+	@Operation(summary = "채팅방 단건 조회", description = "채팅방 ID를 받아 채팅방의 메세지를 Slice 형태로 생성하고 반환합니다.")
+	@GetMapping("/roooms/{chatRoomId}/messages")
+	public ResponseEntity<ApiResponse<Slice<ChatMessageResponseDto>>> getMessages(
+		@Parameter(hidden = true) @AuthenticationPrincipal User user,
+		@PathVariable Long chatRoomId, @RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "20") int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+		return ResponseEntity.ok(
+			ApiResponse.success(chatService.getChatMessages(chatRoomId, pageable, Long.parseLong(user.getUsername()))));
 	}
 }
