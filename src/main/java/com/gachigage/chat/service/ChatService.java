@@ -10,12 +10,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.gachigage.chat.domain.ChatMessage;
-import com.gachigage.chat.domain.ChatMessageType;
 import com.gachigage.chat.domain.ChatRoom;
 import com.gachigage.chat.dto.ChatMessageRequestDto;
 import com.gachigage.chat.dto.ChatMessageResponseDto;
 import com.gachigage.chat.dto.ChatRoomCreateRequestDto;
 import com.gachigage.chat.dto.ChatRoomCreateResponseDto;
+import com.gachigage.chat.dto.ChatRoomListResponseDto;
 import com.gachigage.chat.dto.ChatRoomResponseDto;
 import com.gachigage.chat.repository.ChatMessageRepository;
 import com.gachigage.chat.repository.ChatRoomRepository;
@@ -84,7 +84,7 @@ public class ChatService {
 			});
 	}
 
-	public List<ChatRoomResponseDto> getMyChatRooms(Long userOauthId) {
+	public List<ChatRoomListResponseDto> getMyChatRooms(Long userOauthId) {
 		if (userOauthId == null) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED);
 		}
@@ -98,7 +98,7 @@ public class ChatService {
 			Long myLastReadId = isMyRoleSeller ? room.getSellerLastReadMessageId() : room.getBuyerLastReadMessageId();
 			int unreadCount = chatMessageRepository.countUnreadMessages(room.getId(), myLastReadId);
 
-			return ChatRoomResponseDto.builder()
+			return ChatRoomListResponseDto.builder()
 				.chatRoomId(room.getId())
 				.otherName(otherMember.getNickname())
 				.otherProfileImage(otherMember.getImageUrl())
@@ -108,6 +108,41 @@ public class ChatService {
 				.productId(room.getProduct().getId())
 				.build();
 		}).toList();
+	}
+
+	public ChatRoomResponseDto getChatRoom(Long memberOauthId, Long chatRoomId) {
+		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+			.orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
+
+		if (memberOauthId == null || (!chatRoom.getSeller().getOauthId().equals(memberOauthId) && !chatRoom.getBuyer()
+			.getOauthId()
+			.equals(memberOauthId))) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
+
+		boolean isMyRoleSeller = memberOauthId.equals(chatRoom.getSeller().getOauthId());
+		Long myLastReadId =
+			isMyRoleSeller ? chatRoom.getSellerLastReadMessageId() : chatRoom.getBuyerLastReadMessageId();
+		int unreadCount = chatMessageRepository.countUnreadMessages(chatRoom.getId(), myLastReadId);
+
+		return ChatRoomResponseDto.builder()
+			.chatRoomId(chatRoomId)
+			.sellerName(chatRoom.getSeller().getNickname())
+			.sellerImageUrl(chatRoom.getSeller().getImageUrl())
+			.buyerName(chatRoom.getBuyer().getNickname())
+			.buyerImageUrl(chatRoom.getBuyer().getImageUrl())
+			.productTitle(chatRoom.getProduct().getTitle())
+			.productImageUrl(
+				Objects.requireNonNull(chatRoom.getProduct()
+						.getImages()
+						.stream()
+						.filter(image -> image.getOrder() == 1)
+						.findFirst()
+						.orElse(null))
+					.getImageUrl())
+			.unreadCount(unreadCount)
+			.productStatus(chatRoom.getProduct().getStatus())
+			.build();
 	}
 
 	public Slice<ChatMessageResponseDto> getChatMessages(Long chatRoomId, Pageable pageable, Long userOauthId) {
@@ -136,7 +171,7 @@ public class ChatService {
 		ChatMessage chatMessage = ChatMessage.builder()
 			.chatRoom(chatRoom)
 			.sender(sender)
-			.messageType(ChatMessageType.TEXT)
+			.messageType(messageRequestDto.getMessageType())
 			.content(messageRequestDto.getContent())
 			.createdAt(LocalDateTime.now())
 			.build();
@@ -148,14 +183,5 @@ public class ChatService {
 		ChatMessageResponseDto responseDto = ChatMessageResponseDto.from(chatMessage);
 
 		template.convertAndSend("/sub/chat/room/" + chatRoom.getId(), responseDto);
-	}
-
-	public boolean isMemberInRoom(Long memberOauthId, Long chatRoomId) {
-		Member member = memberRepository.findMemberByOauthId(memberOauthId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-			.orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
-
-		return chatRoom.getBuyer() == member || chatRoom.getSeller() == member;
 	}
 }

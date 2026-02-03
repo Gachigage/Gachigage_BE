@@ -1,20 +1,32 @@
 package com.gachigage.chat.dto;
 
-import java.time.LocalDateTime;
+import com.gachigage.product.domain.ProductStatus;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Builder
-@Setter
 @Getter
+@RequiredArgsConstructor
 public class ChatRoomResponseDto {
-	private Long chatRoomId;
-	private Long productId;
-	private String otherName;
-	private String otherProfileImage;
-	private String lastMessage;
-	private LocalDateTime lastMessageTime;
-	private int unreadCount;
+
+	private final Long chatRoomId;
+
+	private final String sellerName;
+
+	private final String sellerImageUrl;
+
+	private final String buyerName;
+
+	private final String buyerImageUrl;
+
+	private final String productTitle;
+
+	private final String productImageUrl;
+
+	private final ProductStatus productStatus;
+
+	private final int unreadCount;
+
 }
