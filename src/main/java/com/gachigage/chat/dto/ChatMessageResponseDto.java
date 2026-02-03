@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.gachigage.chat.domain.ChatMessage;
 import com.gachigage.chat.domain.ChatMessageType;
+import com.gachigage.chat.domain.ChatRoom;
+import com.gachigage.member.Member;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +20,7 @@ public class ChatMessageResponseDto {
 
 	private final String content;
 
-	private final Long senderId;
+	private final boolean senderIsBuyer;
 
 	private final ChatMessageType messageType;
 
@@ -27,11 +29,13 @@ public class ChatMessageResponseDto {
 	private final boolean isRead;
 
 	public static ChatMessageResponseDto from(ChatMessage chatMessage) {
+		ChatRoom chatRoom = chatMessage.getChatRoom();
+		Member sender = chatMessage.getSender();
 		return ChatMessageResponseDto.builder()
 			.chatRoomId(chatMessage.getChatRoom().getId())
 			.content(chatMessage.getContent())
 			.sendAt(chatMessage.getCreatedAt())
-			.senderId(chatMessage.getSender().getOauthId())
+			.senderIsBuyer(chatRoom.getBuyer().equals(sender))
 			.messageType(chatMessage.getMessageType())
 			.build();
 	}

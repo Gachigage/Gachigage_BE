@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.gachigage.chat.dto.ChatMessageResponseDto;
 import com.gachigage.chat.dto.ChatRoomCreateRequestDto;
 import com.gachigage.chat.dto.ChatRoomCreateResponseDto;
+import com.gachigage.chat.dto.ChatRoomListResponseDto;
 import com.gachigage.chat.dto.ChatRoomResponseDto;
 import com.gachigage.chat.service.ChatService;
 import com.gachigage.global.ApiResponse;
@@ -45,12 +46,20 @@ public class ChatHttpController {
 
 	@Operation(summary = "내 채팅방 일괄 조회 ", description = "유저 정보를 받아 해당 유저 채팅방을 일괄로 간략하게 조회한 리스트를 반환합니다.")
 	@GetMapping("/rooms")
-	public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyRooms(
+	public ResponseEntity<ApiResponse<List<ChatRoomListResponseDto>>> getMyRooms(
 		@Parameter(hidden = true) @AuthenticationPrincipal User user) {
 		return ResponseEntity.ok(ApiResponse.success(chatService.getMyChatRooms(Long.parseLong(user.getUsername()))));
 	}
 
-	@Operation(summary = "채팅방 단건 조회", description = "채팅방 ID를 받아 채팅방의 메세지를 Slice 형태로 생성하고 반환합니다.")
+	@Operation(summary = "내 채팅방 조회 ", description = "유저 정보와 채팅방 id를 받아 해당 채팅방을 조회하여 반환합니다.")
+	@GetMapping("/rooms/{chatRoomId}")
+	public ResponseEntity<ApiResponse<ChatRoomResponseDto>> getRoom(
+		@Parameter(hidden = true) @AuthenticationPrincipal User user, @PathVariable Long chatRoomId) {
+		return ResponseEntity.ok(
+			ApiResponse.success(chatService.getChatRoom(Long.parseLong(user.getUsername()), chatRoomId)));
+	}
+
+	@Operation(summary = "채팅방 메세지 상세 조회", description = "채팅방 ID를 받아 채팅방의 메세지들을 Slice 형태로 생성하고 반환합니다.")
 	@GetMapping("/rooms/{chatRoomId}/messages")
 	public ResponseEntity<ApiResponse<Slice<ChatMessageResponseDto>>> getMessages(
 		@Parameter(hidden = true) @AuthenticationPrincipal User user,
