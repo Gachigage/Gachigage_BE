@@ -33,7 +33,7 @@ public class ProductImage {
 	private String imageUrl;
 
 	@Column(name = "display_order", nullable = false)
-	private int order;
+	private int order; // TODO : s3 구현시, ordering 필요.
 
 	@Builder
 	public ProductImage(Product product, String imageUrl, int order) {

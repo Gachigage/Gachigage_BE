@@ -45,7 +45,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 		String accessToken = jwtProvider.generateAccessToken(oauthId, claims);
 		log.warn("accessToken: {}", accessToken);
-		String targetUrl = UriComponentsBuilder.fromUriString(frontEndUrl + "/auth/kakao/callback")
+		log.info("frontEndUrl raw = [{}]", frontEndUrl);
+		String targetUrl = UriComponentsBuilder.fromUriString(frontEndUrl.trim() + "/auth/kakao/callback")
 			.queryParam("token", accessToken)
 			.build()
 			.toUriString();

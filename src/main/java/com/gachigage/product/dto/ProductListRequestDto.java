@@ -1,24 +1,34 @@
 package com.gachigage.product.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.annotation.Nullable;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProductListRequestDto {
+public record ProductListRequestDto(
 
-	private String query;
-	private Long categoryId;
-	private Integer minPrice;
-	private Integer maxPrice;
-	private String province;
-	private String city;
-	private String district;
-	private String group;
-	private Integer page;
-	private Integer size;
+	@Nullable
+	String query,
+
+	@Nullable
+	Long categoryId,
+
+	@Nullable
+	PriceArrangeDto priceArrange,
+	@Nullable
+	LocationDto locationDto,
+	@Nullable
+	String group,
+	Integer page,
+	Integer size
+) {
+
+	public record PriceArrangeDto(
+		Integer minPrice,
+		Integer maxPrice
+	) {
+	}
+
+	public record LocationDto(
+		String province,
+		String city
+	) {
+	}
 }

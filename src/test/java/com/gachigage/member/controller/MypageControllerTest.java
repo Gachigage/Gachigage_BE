@@ -1,6 +1,5 @@
 package com.gachigage.member.controller;
 
-import com.gachigage.member.dto.response.MyProfileResponseDto;
 import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.member.service.MypageService;
@@ -9,16 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -37,12 +35,13 @@ public class MypageControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private MypageService mypageService;
 
     @Test
     @DisplayName("프로필 이미지 변경 테스트 - 성공하면 200 OK")
-    @WithMockUser(username = "12345678") // 가짜로 로그인한 척 (ID: 12345678)
+    @WithMockUser(username = "12345678")
+        // 가짜로 로그인한 척 (ID: 12345678)
     void updateProfileImageTest() throws Exception {
 
         MockMultipartFile file = new MockMultipartFile(
@@ -60,7 +59,10 @@ public class MypageControllerTest {
         // when & then: API 찌르기
         mockMvc.perform(multipart("/users/me/profile-image")
                         .file(file)
-                        .with(request -> { request.setMethod("PUT"); return request; })
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        })
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(print()) // 결과를 콘솔에 출력
                 .andExpect(status().isOk()) // 200 OK인지 확인
