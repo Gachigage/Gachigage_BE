@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 public class ChatRoomResponseDto {
 	private Long chatRoomId;
+	private Long productId;
 	private String otherName;
 	private String otherProfileImage;
 	private String lastMessage;

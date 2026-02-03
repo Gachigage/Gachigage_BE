@@ -105,6 +105,7 @@ public class ChatService {
 				.lastMessage(room.getLastMessage())
 				.lastMessageTime(room.getLastMessageTime())
 				.unreadCount(unreadCount)
+				.productId(room.getProduct().getId())
 				.build();
 		}).toList();
 	}
