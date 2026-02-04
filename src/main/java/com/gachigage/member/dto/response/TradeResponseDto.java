@@ -15,4 +15,5 @@ public class TradeResponseDto {
 	private String thumbnailUrl;
 	private LocalDateTime tradeDate;
 	private String status;
+	private int quantity;
 }
