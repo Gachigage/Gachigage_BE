@@ -23,7 +23,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table(name = "table")
+@Table(name = "trade")
 @Entity
 @Getter
 @Builder
