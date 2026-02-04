@@ -114,9 +114,15 @@ public class ProductService {
 			.map(url -> ProductImage.builder().imageUrl(url).build())
 			.toList();
 
+
+		Region region = product.getRegion();
+		if (preferredTradeLocationDto != null){
+			region = getRegion(preferredTradeLocationDto.getLongitude(),preferredTradeLocationDto.getLatitude());
+		}
+
 		product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
 			preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
-			newProductImages);
+			newProductImages,region);
 	}
 
 	@Transactional

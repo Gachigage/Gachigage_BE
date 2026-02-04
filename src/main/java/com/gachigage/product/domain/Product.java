@@ -202,7 +202,8 @@ public class Product extends BaseEntity {
 		Double longitude,
 		String address,
 		List<ProductPrice> newPrices,
-		List<ProductImage> newImages
+		List<ProductImage> newImages,
+		Region region
 	) {
 		this.category = category;
 		this.title = title;
@@ -212,16 +213,15 @@ public class Product extends BaseEntity {
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.address = address;
-
+		this.region = region;
 		changePrices(newPrices);
 		changeImages(newImages);
 	}
 
 	private void changePrices(List<ProductPrice> newPrices) {
-		this.prices.clear(); // orphanRemoval → DELETE
-
+		this.prices.forEach(ProductPrice::inActive);
 		for (ProductPrice price : newPrices) {
-			addPrice(price); // validation + 연관관계 세팅
+			addPrice(price);
 		}
 	}
 

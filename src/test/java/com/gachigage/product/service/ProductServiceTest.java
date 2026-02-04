@@ -1,7 +1,6 @@
 package com.gachigage.product.service;
 
 import com.gachigage.global.error.CustomException;
-import com.gachigage.image.service.ImageService;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.RoleType;
@@ -9,10 +8,8 @@ import com.gachigage.product.domain.*;
 import com.gachigage.product.dto.ProductLikeResponseDto;
 import com.gachigage.product.dto.ProductListRequestDto;
 import com.gachigage.product.dto.ProductListResponseDto;
-import com.gachigage.product.repository.ProductCategoryRepository;
 import com.gachigage.product.repository.ProductLikeRepository;
 import com.gachigage.product.repository.ProductRepository;
-import com.gachigage.product.repository.RegionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
