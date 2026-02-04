@@ -1,11 +1,11 @@
 package com.gachigage.member.dto.response;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -13,11 +13,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MyProfileResponseDto {
 
-    private Long userId;
-    private String name;
-    private String nickname;
-    private String profileImage;
-    private String email;
-    private LocalDateTime createdAt;
+	private Long userId;
+	private String name;
+	private String nickname;
+	private String profileImage;
+	private String email;
+	private LocalDateTime createdAt;
 
 }
