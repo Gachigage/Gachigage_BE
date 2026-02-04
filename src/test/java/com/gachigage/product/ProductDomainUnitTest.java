@@ -241,7 +241,7 @@ public class ProductDomainUnitTest {
         assertThat(product.getLatitude()).isEqualTo(37.0);
         assertThat(product.getLongitude()).isEqualTo(127.0);
         assertThat(product.getAddress()).isEqualTo("New Address");
-        assertThat(product.getPrices()).containsExactly(mockProductPrice,newPrice1);
+        assertThat(product.getPrices()).containsExactly(mockProductPrice, newPrice1);
         assertThat(product.getImages()).containsExactly(newImage1);
 
         verify(newPrice1).setProduct(product);
@@ -340,7 +340,7 @@ public class ProductDomainUnitTest {
                         "New Address",
                         prices,
                         images,
-						new Region("", "", "", "1234567890")
+                        new Region("", "", "", "1234567890")
                 )
         );
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT_VALUE);

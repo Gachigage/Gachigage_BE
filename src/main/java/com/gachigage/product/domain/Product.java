@@ -1,31 +1,17 @@
 package com.gachigage.product.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hibernate.annotations.ColumnDefault;
-
 import com.gachigage.global.common.BaseEntity;
 import com.gachigage.global.error.CustomException;
 import com.gachigage.global.error.ErrorCode;
 import com.gachigage.member.Member;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,240 +19,244 @@ import lombok.NoArgsConstructor;
 @Table(name = "product")
 public class Product extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "seller_id", nullable = false)
-	private Member seller;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private Member seller;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id", nullable = false)
-	private ProductCategory category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private ProductCategory category;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "region_id")
-	private Region region;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Region region;
 
-	@Column(name = "title", length = 100, nullable = false)
-	private String title;
+    @Column(name = "title", length = 100, nullable = false)
+    private String title;
 
-	@Column(name = "description", columnDefinition = "TEXT", nullable = false)
-	private String description;
+    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    private String description;
 
-	@Column(name = "stock", nullable = false)
-	private Long stock;
+    @Column(name = "stock", nullable = false)
+    private Long stock;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "trade_type", nullable = false)
-	private TradeType tradeType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trade_type", nullable = false)
+    private TradeType tradeType;
 
-	@ColumnDefault("0")
-	@Column(name = "visit_count", nullable = false)
-	private int visitCount;
+    @ColumnDefault("0")
+    @Column(name = "visit_count", nullable = false)
+    private int visitCount;
 
-	@ColumnDefault("0")
-	@Column(name = "like_count", nullable = false)
-	private int likeCount;
+    @ColumnDefault("0")
+    @Column(name = "like_count", nullable = false)
+    private int likeCount;
 
-	@Column(name = "latitude")
-	private Double latitude;
+    @Column(name = "latitude")
+    private Double latitude;
 
-	@Column(name = "longitude")
-	private Double longitude;
+    @Column(name = "longitude")
+    private Double longitude;
 
-	@Column(name = "address", length = 255)
-	private String address;
+    @Column(name = "address", length = 255)
+    private String address;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<ProductImage> images = new ArrayList<>();
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductImage> images = new ArrayList<>();
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<ProductPrice> prices = new ArrayList<>();
+    public List<ProductImage> getProductImages() {
+        return images;
+    }
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false)
-	@ColumnDefault("'SELLING'") // DB에 들어갈 기본값
-	private ProductStatus status;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductPrice> prices = new ArrayList<>();
 
-	private Product(Long id, Member seller, ProductCategory category, Region region,
-		String title, String description, Long stock, TradeType tradeType,
-		Double latitude, Double longitude, String address) {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @ColumnDefault("'SELLING'") // DB에 들어갈 기본값
+    private ProductStatus status;
 
-		this.id = id;
-		this.seller = seller;
-		this.category = category;
-		this.region = region;
-		this.title = title;
-		this.description = description;
-		this.stock = stock;
-		this.tradeType = tradeType;
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.address = address;
-	}
+    private Product(Long id, Member seller, ProductCategory category, Region region,
+                    String title, String description, Long stock, TradeType tradeType,
+                    Double latitude, Double longitude, String address) {
 
-	public static Product create(
-		Long id,
-		Member seller,
-		ProductCategory category,
-		Region region,
-		String title,
-		String description,
-		Long stock,
-		TradeType tradeType,
-		Double latitude,
-		Double longitude,
-		String address,
-		List<ProductPrice> prices,
-		List<ProductImage> images
-	) {
+        this.id = id;
+        this.seller = seller;
+        this.category = category;
+        this.region = region;
+        this.title = title;
+        this.description = description;
+        this.stock = stock;
+        this.tradeType = tradeType;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.address = address;
+    }
 
-		if (latitude != null) {
-			isValidLatitude(latitude);
-		}
+    public static Product create(
+            Long id,
+            Member seller,
+            ProductCategory category,
+            Region region,
+            String title,
+            String description,
+            Long stock,
+            TradeType tradeType,
+            Double latitude,
+            Double longitude,
+            String address,
+            List<ProductPrice> prices,
+            List<ProductImage> images
+    ) {
 
-		if (longitude != null) {
-			isValidLongitude(longitude);
-		}
+        if (latitude != null) {
+            isValidLatitude(latitude);
+        }
 
-		validateCategory(category);
-		validateImage(images);
-		validatePriceTable(prices);
+        if (longitude != null) {
+            isValidLongitude(longitude);
+        }
 
-		Product product = new Product(
-			id, seller, category, region,
-			title, description, stock, tradeType,
-			latitude, longitude, address
-		);
+        validateCategory(category);
+        validateImage(images);
+        validatePriceTable(prices);
 
-		if (prices == null || prices.isEmpty()) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
-		}
+        Product product = new Product(
+                id, seller, category, region,
+                title, description, stock, tradeType,
+                latitude, longitude, address
+        );
 
-		if (images.size() > 8) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
-		}
-		product.status = ProductStatus.SELLING;
+        if (prices == null || prices.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
+        }
 
-		prices.forEach(product::addPrice);
-		images.forEach(product::addImage);
-		return product;
-	}
+        if (images.size() > 8) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
+        }
+        product.status = ProductStatus.SELLING;
 
-	private static void isValidLongitude(Double coordinate) {
-		if (coordinate < -180 || coordinate > 180) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "경도는 -180에서 180 사이의 값이어야 합니다.");
-		}
-	}
+        prices.forEach(product::addPrice);
+        images.forEach(product::addImage);
+        return product;
+    }
 
-	private static void isValidLatitude(Double coordinate) {
-		if (coordinate < -90 || coordinate > 90) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "위도는 -90에서 90 사이의 값이어야 합니다.");
-		}
-	}
+    private static void isValidLongitude(Double coordinate) {
+        if (coordinate < -180 || coordinate > 180) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "경도는 -180에서 180 사이의 값이어야 합니다.");
+        }
+    }
 
-	private static void validatePriceTable(List<ProductPrice> priceTable) {
-		if (priceTable == null || priceTable.isEmpty()) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
-		}
-		if (priceTable.size() > 5) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 가격 정보는 최대 5개까지 등록할 수 있습니다.");
-		}
-	}
+    private static void isValidLatitude(Double coordinate) {
+        if (coordinate < -90 || coordinate > 90) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "위도는 -90에서 90 사이의 값이어야 합니다.");
+        }
+    }
 
-	private static void validateImage(List<ProductImage> images) {
-		if (images.size() > 8) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
-		}
-	}
+    private static void validatePriceTable(List<ProductPrice> priceTable) {
+        if (priceTable == null || priceTable.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품은 최소 하나의 가격 정보를 가져야 합니다.");
+        }
+        if (priceTable.size() > 5) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 가격 정보는 최대 5개까지 등록할 수 있습니다.");
+        }
+    }
 
-	private static void validateCategory(ProductCategory category) {
-		if (category != null && category.getParent() == null) {
-			if (!category.getName().equals("기타")) {
-				throw new CustomException(ErrorCode.INVALID_INPUT_VALUE,
-					"대분류 카테고리는 기타 카테고리만 선택할 수 있습니다. 하위 카테고리를 입력해주세요.");
-			}
-		}
-	}
+    private static void validateImage(List<ProductImage> images) {
+        if (images.size() > 8) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "상품 이미지는 최대 8개까지 등록할 수 있습니다.");
+        }
+    }
 
-	public void modify(
-		ProductCategory category,
-		String title,
-		String description,
-		Long stock,
-		TradeType tradeType,
-		Double latitude,
-		Double longitude,
-		String address,
-		List<ProductPrice> newPrices,
-		List<ProductImage> newImages,
-		Region region
-	) {
-		this.category = category;
-		this.title = title;
-		this.description = description;
-		this.stock = stock;
-		this.tradeType = tradeType;
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.address = address;
-		this.region = region;
-		changePrices(newPrices);
-		changeImages(newImages);
-	}
+    private static void validateCategory(ProductCategory category) {
+        if (category != null && category.getParent() == null) {
+            if (!category.getName().equals("기타")) {
+                throw new CustomException(ErrorCode.INVALID_INPUT_VALUE,
+                        "대분류 카테고리는 기타 카테고리만 선택할 수 있습니다. 하위 카테고리를 입력해주세요.");
+            }
+        }
+    }
 
-	private void changePrices(List<ProductPrice> newPrices) {
-		this.prices.forEach(ProductPrice::inActive);
-		for (ProductPrice price : newPrices) {
-			addPrice(price);
-		}
-	}
+    public void modify(
+            ProductCategory category,
+            String title,
+            String description,
+            Long stock,
+            TradeType tradeType,
+            Double latitude,
+            Double longitude,
+            String address,
+            List<ProductPrice> newPrices,
+            List<ProductImage> newImages,
+            Region region
+    ) {
+        this.category = category;
+        this.title = title;
+        this.description = description;
+        this.stock = stock;
+        this.tradeType = tradeType;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.address = address;
+        this.region = region;
+        changePrices(newPrices);
+        changeImages(newImages);
+    }
 
-	private void changeImages(List<ProductImage> newImages) {
-		this.images.clear();
+    private void changePrices(List<ProductPrice> newPrices) {
+        this.prices.forEach(ProductPrice::inActive);
+        for (ProductPrice price : newPrices) {
+            addPrice(price);
+        }
+    }
 
-		for (ProductImage image : newImages) {
-			addImage(image);
-		}
-	}
+    private void changeImages(List<ProductImage> newImages) {
+        this.images.clear();
 
-	public void increaseVisitCount() {
-		this.visitCount += 1;
-	}
+        for (ProductImage image : newImages) {
+            addImage(image);
+        }
+    }
 
-	public void incrementLikeCount() {
-		this.likeCount += 1;
-	}
+    public void increaseVisitCount() {
+        this.visitCount += 1;
+    }
 
-	public void decrementLikeCount() {
-		if (this.likeCount > 0) {
-			this.likeCount -= 1;
-		}
-	}
+    public void incrementLikeCount() {
+        this.likeCount += 1;
+    }
 
-	private void addPrice(ProductPrice price) {
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount -= 1;
+        }
+    }
 
-		if (price == null) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "가격 정보이 비어있을 수 없습니다.");
-		}
+    private void addPrice(ProductPrice price) {
 
-		if (price.getQuantity() <= 0 || price.getPrice() < 0) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "가격 정보의 수량과 가격은 0 이상이어야 합니다.");
-		}
+        if (price == null) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "가격 정보이 비어있을 수 없습니다.");
+        }
 
-		if (price.getQuantity() > this.stock) {
-			throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "가격 정보의 수량은 재고 수량을 초과할 수 없습니다.");
-		}
+        if (price.getQuantity() <= 0 || price.getPrice() < 0) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "가격 정보의 수량과 가격은 0 이상이어야 합니다.");
+        }
 
-		this.prices.add(price);
-		price.setProduct(this);
-	}
+        if (price.getQuantity() > this.stock) {
+            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "가격 정보의 수량은 재고 수량을 초과할 수 없습니다.");
+        }
 
-	private void addImage(ProductImage image) {
-		this.images.add(image);
-		image.setProduct(this);
-	}
+        this.prices.add(price);
+        price.setProduct(this);
+    }
+
+    private void addImage(ProductImage image) {
+        this.images.add(image);
+        image.setProduct(this);
+    }
 }

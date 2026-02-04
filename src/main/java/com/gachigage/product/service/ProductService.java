@@ -110,9 +110,10 @@ public class ProductService {
 				.build())
 			.toList();
 
-		List<ProductImage> newProductImages = imageUrls.stream()
-			.map(url -> ProductImage.builder().imageUrl(url).build())
-			.toList();
+		List<ProductImage> newProductImages = new java.util.ArrayList<>();
+		for (int i = 0; i < imageUrls.size(); i++) {
+			newProductImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i + 1).build());
+		}
 
 
 		Region region = product.getRegion();
@@ -155,9 +156,10 @@ public class ProductService {
 				.build())
 			.toList();
 
-		List<ProductImage> productImages = imageUrls.stream()
-			.map(url -> ProductImage.builder().imageUrl(url).build())
-			.toList();
+		List<ProductImage> productImages = new java.util.ArrayList<>();
+		for (int i = 0; i < imageUrls.size(); i++) {
+			productImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i).build());
+		}
 
 		Product product = Product.create(null, seller, category, region, title, detail, stock, tradeType, latitude,
 			longitude, address, priceTables, productImages);

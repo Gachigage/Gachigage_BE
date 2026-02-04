@@ -1,6 +1,5 @@
 package com.gachigage.trade.repository;
 
-import com.gachigage.member.Member;
 import com.gachigage.trade.domain.Trade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

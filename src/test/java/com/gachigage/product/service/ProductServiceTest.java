@@ -1,5 +1,6 @@
 package com.gachigage.product.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gachigage.global.error.CustomException;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
@@ -10,9 +11,14 @@ import com.gachigage.product.dto.ProductListRequestDto;
 import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.repository.ProductLikeRepository;
 import com.gachigage.product.repository.ProductRepository;
+import com.gachigage.image.service.ImageService;
+import com.gachigage.product.dto.ProductRegistrationRequestDto;
+import com.gachigage.product.repository.ProductCategoryRepository;
+import com.gachigage.product.repository.RegionRepository; // Added import for RegionRepository
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +27,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,6 +52,14 @@ class ProductServiceTest {
     private MemberRepository memberRepository;
     @Mock
     private ProductLikeRepository productLikeRepository;
+    @Mock
+    private ImageService imageService;
+    @Mock
+    private NaverMapsClient naverMapsClient;
+    @Mock
+    private ProductCategoryRepository productCategoryRepository;
+    @Mock // Added this mock
+    private RegionRepository regionRepository;
 
     private Member savedMember;
     private ProductCategory subCategory;
@@ -61,6 +76,8 @@ class ProductServiceTest {
                 .oauthId(111L)
                 .build();
 
+        // The 'region' variable here is a local variable shadowing the class-level 'region' field.
+        // It's used to construct 'savedProduct'.
         Region region = new Region("서울특별시", "강남구", "역삼동", "1111111111"); // TODO
 
         ProductCategory mainCategory = ProductCategory.builder().name("가구").build();
@@ -163,5 +180,60 @@ class ProductServiceTest {
         verify(productLikeRepository, never()).delete(any());
     }
 
-}
+    @Test
+    @DisplayName("createProduct 호출 시 ProductImage의 order가 1씩 증가하며 저장되는지 확인")
+    void createProduct_ProductImagesHaveCorrectOrder() {
+        // Given
+        Long memberOauthId = 111L;
+        Long subCategoryId = 1L;
+        List<String> imageUrls = List.of("url1", "url2", "url3");
 
+        ProductRegistrationRequestDto.TradeLocationRegistrationDto tradeLocationDto =
+                new ProductRegistrationRequestDto.TradeLocationRegistrationDto(80.0, 37.0, "Test Address");
+
+        List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTable = List.of(
+                new ProductRegistrationRequestDto.ProductPriceRegistrationDto(1, 1000, ACTIVE)
+        );
+
+        when(memberRepository.findMemberByOauthId(memberOauthId)).thenReturn(Optional.of(savedMember));
+        when(productCategoryRepository.findById(subCategoryId)).thenReturn(Optional.of(subCategory));
+        when(naverMapsClient.reverseGeocode(anyDouble(), anyDouble())).thenReturn(Mono.just(
+            mock(JsonNode.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS))
+        ));
+
+        // Mock the deep structure for region extraction
+        JsonNode mockJsonNode = mock(JsonNode.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS));
+        when(mockJsonNode.has("results")).thenReturn(true);
+        when(mockJsonNode.get("results").isEmpty()).thenReturn(false);
+        when(mockJsonNode.get("results").get(0).get("code").get("id").asText()).thenReturn("4113510900"); // Example law code
+        when(mockJsonNode.get("results").get(0).get("region").get("area1").get("name").asText()).thenReturn("경기도");
+        when(mockJsonNode.get("results").get(0).get("region").get("area2").get("name").asText()).thenReturn("성남시 분당구");
+        when(naverMapsClient.reverseGeocode(anyDouble(), anyDouble())).thenReturn(Mono.just(mockJsonNode));
+
+        // Mock regionRepository to return a region when findByLawCode is called
+        when(regionRepository.findByLawCode(anyString())).thenReturn(Optional.of(new Region("경기도", "성남시", "분당구", "4113510900")));
+        when(regionRepository.save(any(Region.class))).thenReturn(new Region("경기도", "성남시", "분당구", "4113510900"));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
+            Product product = invocation.getArgument(0);
+            return product;
+        });
+
+        // When
+        productService.createProduct(memberOauthId, subCategoryId, "Test Product", "Detail", 1L,
+                priceTable, TradeType.DELIVERY, tradeLocationDto, imageUrls);
+
+        // Then
+        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository, times(1)).save(productCaptor.capture());
+        Product capturedProduct = productCaptor.getValue();
+
+        assertNotNull(capturedProduct.getProductImages());
+        assertEquals(imageUrls.size(), capturedProduct.getProductImages().size());
+
+        for (int i = 0; i < imageUrls.size(); i++) {
+            ProductImage productImage = capturedProduct.getProductImages().get(i);
+            assertEquals(i, productImage.getOrder());
+            assertEquals(imageUrls.get(i), productImage.getImageUrl());
+        }
+    }
+}
