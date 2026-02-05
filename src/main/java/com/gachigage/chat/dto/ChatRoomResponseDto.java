@@ -29,4 +29,5 @@ public class ChatRoomResponseDto {
 
 	private final int unreadCount;
 
+	private final boolean amIBuyer;
 }
