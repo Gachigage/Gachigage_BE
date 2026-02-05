@@ -92,15 +92,13 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
 
-		Member member = memberRepository.findById(loginMemberId)
+		Member member = memberRepository.findMemberByOauthId(loginMemberId)
 			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
-
-		if (!product.getSeller().getId().equals(member.getId())) {
-			throw new CustomException(UNAUTHORIZED_USER, "상품 수정 권한이 없는 사용자입니다.");
-		}
 
 		ProductCategory newCategory = productCategoryRepository.findById(subCategoryId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 카테고리입니다"));
+
+		validateAccessorEqualsSeller(product, member);
 
 		List<ProductPrice> newPrices = priceTableDtos.stream()
 			.map(priceDto -> ProductPrice.builder()
@@ -115,15 +113,14 @@ public class ProductService {
 			newProductImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i + 1).build());
 		}
 
-
 		Region region = product.getRegion();
-		if (preferredTradeLocationDto != null){
-			region = getRegion(preferredTradeLocationDto.getLongitude(),preferredTradeLocationDto.getLatitude());
+		if (preferredTradeLocationDto != null) {
+			region = getRegion(preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getLatitude());
 		}
 
 		product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
 			preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
-			newProductImages,region);
+			newProductImages, region);
 	}
 
 	@Transactional
@@ -155,6 +152,10 @@ public class ProductService {
 				.status(PriceTableStatus.ACTIVE)
 				.build())
 			.toList();
+
+		if (imageUrls == null) {
+			throw new CustomException(INVALID_INPUT_VALUE, "이미지 등록은 필수입니다.");
+		}
 
 		List<ProductImage> productImages = new java.util.ArrayList<>();
 		for (int i = 0; i < imageUrls.size(); i++) {
@@ -231,7 +232,8 @@ public class ProductService {
 		return ProductDetailResponseDto.fromEntity(
 			product,
 			isProductLiked,
-			relatedProductDtos
+			relatedProductDtos,
+			isSeller(product, member)
 		);
 	}
 
@@ -315,5 +317,18 @@ public class ProductService {
 			.build();
 
 		return regionRepository.save(region);
+	}
+
+	private void validateAccessorEqualsSeller(Product product, Member member) {
+		if (!product.getSeller().getId().equals(member.getId())) {
+			throw new CustomException(UNAUTHORIZED_USER, "상품 판매자만 점근 가능합니다.");
+		}
+	}
+
+	private boolean isSeller(Product product, Member member) {
+		if (member == null) {
+			return false;
+		}
+		return product.getSeller().getId().equals(member.getId());
 	}
 }

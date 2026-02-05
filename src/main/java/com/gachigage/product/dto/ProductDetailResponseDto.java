@@ -36,11 +36,12 @@ public class ProductDetailResponseDto {
 
 	private Integer viewCount;
 	private Boolean isLiked;
+	private Boolean isOwner;
 
 	private RelatedProductsDto relatedProducts;
 
 	public static ProductDetailResponseDto fromEntity(Product product, boolean isProductLiked,
-		List<RelatedProductDto> relatedProducts) {
+		List<RelatedProductDto> relatedProducts, boolean isOwner) {
 
 		ProductDetailResponseDto response = ProductDetailResponseDto.builder()
 			.productId(product.getId())
@@ -69,6 +70,7 @@ public class ProductDetailResponseDto {
 			.viewCount(product.getVisitCount())
 			.isLiked(isProductLiked)
 			.relatedProducts(RelatedProductsDto.fromEntity(relatedProducts))
+			.isOwner(isOwner)
 			.build();
 
 		if (product.getCategory().getName().equals("기타")) {

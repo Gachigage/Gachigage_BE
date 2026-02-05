@@ -8,7 +8,7 @@ import com.gachigage.product.domain.TradeType;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Table(name = "table")
+@Table(name = "trade")
 @Entity
 @Getter
 @Builder

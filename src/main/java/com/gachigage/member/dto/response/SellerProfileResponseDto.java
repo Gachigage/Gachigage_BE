@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class SellerProfileResponseDto {
-    private Long userId;
-    private String nickname;
-    private String profileImage;
+	private Long userId;
+	private String nickname;
+	private String profileImage;
 }
