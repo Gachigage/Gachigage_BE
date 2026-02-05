@@ -58,7 +58,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 						.where(productLike.product.eq(product).and(productLike.member.oauthId.eq(loginMemberId)))
 						.exists()
 						:
-						Expressions.asBoolean(false).isTrue() // Always returns a BooleanExpression (false)
+						Expressions.asBoolean(false).isTrue()
 					)
 					.then(true)
 					.otherwise(false),
@@ -66,7 +66,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			))
 			.from(productPrice)
 			.join(productPrice.product, product)
-			.leftJoin(product.images, productImage).on(productImage.order.eq(0))
+			.leftJoin(productImage).on(productImage.product.eq(product).and(productImage.order.eq(0)))
 			.leftJoin(product.region, region)
 			.where(
 				titleContains(requestDto.getQuery()),
@@ -134,18 +134,34 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 	}
 
 	private BooleanExpression priceBetween(ProductListRequestDto.PriceArrangeDto priceArrange) {
-		if (priceArrange == null) {
-			return null;
+		if (priceArrange == null || (priceArrange.getMinPrice() == null && priceArrange.getMaxPrice() == null)) {
+			return null; // No price range filter applies
 		}
-		return productPrice.price.between(priceArrange.getMinPrice(), priceArrange.getMaxPrice());
+
+		Integer minPrice = priceArrange.getMinPrice();
+		Integer maxPrice = priceArrange.getMaxPrice();
+
+		if (minPrice != null && maxPrice != null) {
+			return productPrice.price.between(minPrice, maxPrice);
+		} else if (minPrice != null) {
+			return productPrice.price.goe(minPrice);
+		} else { // maxPrice != null
+			return productPrice.price.loe(maxPrice);
+		}
 	}
 
 	private BooleanExpression locationEq(ProductListRequestDto.LocationDto locationDto) {
 		if (locationDto == null) {
 			return null;
 		}
-		return region.province.eq(locationDto.getProvince())
-			.and(region.city.eq(locationDto.getCity()));
+
+		String province = locationDto.getProvince();
+		String city = locationDto.getCity();
+
+		BooleanExpression provinceExpression = (province != null) ? region.province.eq(province) : null;
+		BooleanExpression cityExpression = (city != null) ? region.city.eq(city) : null;
+
+		return Expressions.allOf(provinceExpression, cityExpression);
 	}
 
 	private BooleanExpression groupEq(String group) {
