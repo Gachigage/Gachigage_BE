@@ -1,6 +1,5 @@
 package com.gachigage.member.controller;
 
-import com.gachigage.product.dto.ProductListResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,6 +22,7 @@ import com.gachigage.member.dto.response.MyProfileResponseDto;
 import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.member.service.MypageService;
+import com.gachigage.product.dto.ProductListResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -88,8 +88,8 @@ public class MypageController {
 
 	@GetMapping("/wishlist")
 	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getMyWishlist(
-			@AuthenticationPrincipal UserDetails user,
-			@PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+		@AuthenticationPrincipal UserDetails user,
+		@PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
 		Long oauthId = Long.valueOf(user.getUsername());
 

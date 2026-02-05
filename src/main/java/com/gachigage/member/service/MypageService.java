@@ -2,8 +2,6 @@ package com.gachigage.member.service;
 
 import java.util.List;
 
-import com.gachigage.product.dto.ProductListResponseDto;
-import com.gachigage.product.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,7 +18,9 @@ import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.product.domain.Product;
 import com.gachigage.product.domain.ProductLike;
+import com.gachigage.product.dto.ProductListResponseDto;
 import com.gachigage.product.repository.ProductLikeRepository;
+import com.gachigage.product.repository.ProductRepository;
 import com.gachigage.trade.domain.Trade;
 import com.gachigage.trade.repository.TradeRepository;
 
@@ -40,8 +40,6 @@ public class MypageService {
 	public MyProfileResponseDto getMyProfile(Long oauthId) {
 		Member member = memberRepository.findMemberByOauthId(oauthId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-
 
 		return MyProfileResponseDto.builder()
 			.userId(member.getId())
@@ -71,7 +69,7 @@ public class MypageService {
 
 	public Page<ProductListResponseDto> getMySalesProducts(Long oauthId, Pageable pageable) {
 		Member member = memberRepository.findMemberByOauthId(oauthId)
-				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Page<Product> products = productRepository.findAllBySellerId(member.getId(), pageable);
 
@@ -119,30 +117,6 @@ public class MypageService {
 				: 0;
 
 			return new ProductListResponseDto(
-					product.getId(),
-					product.getTitle(),
-					mainImageUrl,
-					product.getRegion() != null ? product.getRegion().getProvince() : null,
-					product.getRegion() != null ? product.getRegion().getCity() : null,
-					null,
-					product.getTradeType(),
-					price,
-					product.getStock().intValue(),
-					product.getVisitCount(),
-					true,
-					product.getCreatedAt()
-			);
-		});
-	}
-
-	private ProductListResponseDto toProductListResponseDto(Product product) {
-		String mainImageUrl = (product.getImages() != null && !product.getImages().isEmpty())
-				? product.getImages().get(0).getImageUrl() : null;
-
-		int price = (product.getPrices() != null && !product.getPrices().isEmpty())
-				? product.getPrices().get(0).getPrice() : 0;
-
-		return new ProductListResponseDto(
 				product.getId(),
 				product.getTitle(),
 				mainImageUrl,
@@ -155,6 +129,30 @@ public class MypageService {
 				product.getVisitCount(),
 				true,
 				product.getCreatedAt()
+			);
+		});
+	}
+
+	private ProductListResponseDto toProductListResponseDto(Product product) {
+		String mainImageUrl = (product.getImages() != null && !product.getImages().isEmpty())
+			? product.getImages().get(0).getImageUrl() : null;
+
+		int price = (product.getPrices() != null && !product.getPrices().isEmpty())
+			? product.getPrices().get(0).getPrice() : 0;
+
+		return new ProductListResponseDto(
+			product.getId(),
+			product.getTitle(),
+			mainImageUrl,
+			product.getRegion() != null ? product.getRegion().getProvince() : null,
+			product.getRegion() != null ? product.getRegion().getCity() : null,
+			null,
+			product.getTradeType(),
+			price,
+			product.getStock().intValue(),
+			product.getVisitCount(),
+			true,
+			product.getCreatedAt()
 		);
 	}
 
