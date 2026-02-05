@@ -22,6 +22,7 @@ import com.gachigage.member.dto.response.MyProfileResponseDto;
 import com.gachigage.member.dto.response.ProfileImageResponseDto;
 import com.gachigage.member.dto.response.TradeResponseDto;
 import com.gachigage.member.service.MypageService;
+import com.gachigage.product.dto.ProductListResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,13 +75,25 @@ public class MypageController {
 	}
 
 	@GetMapping("/sales")
-	public ResponseEntity<ApiResponse<Page<TradeResponseDto>>> getSalesHistory(
+	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getMyProducts(
 		@AuthenticationPrincipal UserDetails user,
 		@PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
 		Long oauthId = Long.valueOf(user.getUsername());
 
-		Page<TradeResponseDto> response = mypageService.getSalesHistory(oauthId, pageable);
+		Page<ProductListResponseDto> response = mypageService.getMySalesProducts(oauthId, pageable);
+
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	@GetMapping("/wishlist")
+	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getMyWishlist(
+		@AuthenticationPrincipal UserDetails user,
+		@PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+		Long oauthId = Long.valueOf(user.getUsername());
+
+		Page<ProductListResponseDto> response = mypageService.getMyLikes(oauthId, pageable);
 
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}

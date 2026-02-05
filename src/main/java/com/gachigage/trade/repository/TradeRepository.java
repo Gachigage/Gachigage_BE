@@ -10,5 +10,5 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
 	Page<Trade> findAllByBuyerId(Long buyerId, Pageable pageable);
 
-	Page<Trade> findAllBySellerId(Long sellerId, Pageable pageable);
+
 }
