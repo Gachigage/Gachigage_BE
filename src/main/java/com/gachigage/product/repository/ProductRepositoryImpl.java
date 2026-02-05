@@ -69,11 +69,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			.leftJoin(product.images, productImage).on(productImage.order.eq(0))
 			.leftJoin(product.region, region)
 			.where(
-				titleContains(requestDto.query()),
-				categoryEq(requestDto.categoryId()),
-				priceBetween(requestDto.priceArrange()),
-				locationEq(requestDto.locationDto()),
-				groupEq(requestDto.group()),
+				titleContains(requestDto.getQuery()),
+				categoryEq(requestDto.getCategoryId()),
+				priceBetween(requestDto.getPriceArrange()),
+				locationEq(requestDto.getLocationDto()),
+				groupEq(requestDto.getGroup()),
 				stockGtZero(),
 				priceTableStatusActive()
 			)
@@ -88,11 +88,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			.join(productPrice.product, product)
 			.leftJoin(product.region, region)
 			.where(
-				titleContains(requestDto.query()),
-				categoryEq(requestDto.categoryId()),
-				priceBetween(requestDto.priceArrange()),
-				locationEq(requestDto.locationDto()),
-				groupEq(requestDto.group()),
+				titleContains(requestDto.getQuery()),
+				categoryEq(requestDto.getCategoryId()),
+				priceBetween(requestDto.getPriceArrange()),
+				locationEq(requestDto.getLocationDto()),
+				groupEq(requestDto.getGroup()),
 				stockGtZero(),
 				priceTableStatusActive()
 			)
@@ -137,15 +137,15 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 		if (priceArrange == null) {
 			return null;
 		}
-		return productPrice.price.between(priceArrange.minPrice(), priceArrange.maxPrice());
+		return productPrice.price.between(priceArrange.getMinPrice(), priceArrange.getMaxPrice());
 	}
 
 	private BooleanExpression locationEq(ProductListRequestDto.LocationDto locationDto) {
 		if (locationDto == null) {
 			return null;
 		}
-		return region.province.eq(locationDto.province())
-			.and(region.city.eq(locationDto.city()));
+		return region.province.eq(locationDto.getProvince())
+			.and(region.city.eq(locationDto.getCity()));
 	}
 
 	private BooleanExpression groupEq(String group) {

@@ -56,11 +56,11 @@ public class ProductService {
 	@Transactional(readOnly = true)
 	public Page<ProductListResponseDto> getProducts(ProductListRequestDto requestDto, Long loginMemberId) {
 
-		if (requestDto.size() < 1) {
+		if (requestDto.getSize() < 1) {
 			throw new CustomException(RESOURCE_NOT_FOUND, "페이지 크기는 1 이상이어야 합니다.");
 		}
 
-		Pageable pageable = PageRequest.of(requestDto.page(), requestDto.size());
+		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
 		return productRepository.search(requestDto, pageable, loginMemberId);
 	}
 

@@ -99,7 +99,7 @@ class ProductServiceTest {
         ProductListRequestDto requestDto = new ProductListRequestDto(
                 "테스트", 1L, null, null, null, 0, 10
         );
-        Pageable pageable = PageRequest.of(requestDto.page(), requestDto.size());
+        Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
 
         ProductListResponseDto responseDto = new ProductListResponseDto(
                 1L, "테스트 상품", "http://example.com/image.jpg",
