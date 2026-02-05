@@ -136,7 +136,7 @@ public class ChatService {
 				Objects.requireNonNull(chatRoom.getProduct()
 						.getImages()
 						.stream()
-						.filter(image -> image.getOrder() == 1)
+						.filter(image -> image.getOrder() == 0)
 						.findFirst()
 						.orElse(null))
 					.getImageUrl())
