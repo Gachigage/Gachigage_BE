@@ -110,17 +110,20 @@ public class ProductService {
 
 		List<ProductImage> newProductImages = new java.util.ArrayList<>();
 		for (int i = 0; i < imageUrls.size(); i++) {
-			newProductImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i + 1).build());
+			newProductImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i).build());
 		}
 
 		Region region = product.getRegion();
 		if (preferredTradeLocationDto != null) {
 			region = getRegion(preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getLatitude());
+			product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
+				preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
+				newProductImages, region);
+			return;
 		}
 
-		product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
-			preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
-			newProductImages, region);
+		product.modify(newCategory, title, detail, stock, tradeType, null,
+			null, null, newPrices, newProductImages, region);
 	}
 
 	@Transactional

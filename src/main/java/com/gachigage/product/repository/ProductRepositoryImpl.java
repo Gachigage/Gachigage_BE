@@ -197,7 +197,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
 		return queryFactory
 			.selectFrom(product)
-			.join(product.region, region).fetchJoin()
+			.leftJoin(product.region, region).fetchJoin()
 			.join(product.category).fetchJoin()
 			.where(predicate)
 			.orderBy(product.createdAt.desc())

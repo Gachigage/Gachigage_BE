@@ -54,6 +54,7 @@ public class ProductDetailResponseDto {
 				.toList())
 			.stock(product.getStock())
 			.priceTable(product.getPrices().stream()
+				.filter(price -> price.getStatus() == PriceTableStatus.ACTIVE)
 				.map(price -> ProductPriceDto.builder()
 					.quantity(price.getQuantity())
 					.price(price.getPrice())
@@ -167,8 +168,8 @@ public class ProductDetailResponseDto {
 				.isLiked(isLiked)
 				.price(minQuantityProdcutPrice.getPrice())
 				.quantity(minQuantityProdcutPrice.getQuantity())
-				.province(product.getRegion().getProvince())
-				.city(product.getRegion().getCity())
+				.province(product.getRegion() == null ? null : product.getRegion().getProvince())
+				.city(product.getRegion() == null ? null : product.getRegion().getCity())
 				.viewCount(product.getVisitCount())
 				.build();
 		}
