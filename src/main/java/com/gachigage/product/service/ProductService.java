@@ -56,8 +56,12 @@ public class ProductService {
 	@Transactional(readOnly = true)
 	public Page<ProductListResponseDto> getProducts(ProductListRequestDto requestDto, Long loginMemberId) {
 
-		if (requestDto.getSize() < 1) {
-			throw new CustomException(RESOURCE_NOT_FOUND, "페이지 크기는 1 이상이어야 합니다.");
+		if (requestDto.getSize() == null || requestDto.getSize() < 0) {
+			throw new CustomException(INVALID_INPUT_VALUE, "페이지 크기는 0 이상이어야 합니다.");
+		}
+
+		if(requestDto.getPage() == null){
+			throw new CustomException(INVALID_INPUT_VALUE, "조회할 페이지 인덱스를 입력해주세요");
 		}
 
 		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
