@@ -14,6 +14,7 @@ import com.gachigage.trade.dto.ProductPricesInfoResponse;
 import com.gachigage.trade.dto.TradeRequest;
 import com.gachigage.trade.service.TradeService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,12 +26,14 @@ public class TradeController {
 
 	@GetMapping("{chatRoomId}")
 	@Transactional
+	@Operation(description = "채팅방에서 거래중인 상품의 가격 리스트를 제공")
 	public ResponseEntity<ApiResponse<ProductPricesInfoResponse>> getProductPricesInfo(@PathVariable Long chatRoomId) {
 		ProductPricesInfoResponse response = tradeService.getProductInfo(chatRoomId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
 	@PostMapping("/{chatRoomId}")
+	@Operation(description = "채팅방에서 거래중인 상품 거래 확정, 현재는 바로 거래 확정이 되는 상황")
 	public ResponseEntity<ApiResponse> registerTradeInfo(@PathVariable Long chatRoomId, TradeRequest request) {
 		tradeService.createTrade(chatRoomId, request.getProductPriceId());
 		return ResponseEntity.ok(ApiResponse.success());
