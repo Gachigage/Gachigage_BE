@@ -84,6 +84,9 @@ public class Product extends BaseEntity {
 	private List<ProductImage> images = new ArrayList<>();
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductPrice> prices = new ArrayList<>();
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<ProductLike> likes = new ArrayList<>();
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	@ColumnDefault("'SELLING'") // DB에 들어갈 기본값
