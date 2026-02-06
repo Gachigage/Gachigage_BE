@@ -2,6 +2,8 @@ package com.gachigage.member.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.gachigage.trade.domain.TradeStatus;
+
 import lombok.Builder;
 import lombok.Getter;
 

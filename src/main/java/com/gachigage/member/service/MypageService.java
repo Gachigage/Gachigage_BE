@@ -95,7 +95,7 @@ public class MypageService {
 			.quantity(quantity)
 			.thumbnailUrl(thumbnailUrl)
 			.tradeDate(trade.getCreatedAt())
-			.status(trade.getStatus())
+			.status(String.valueOf(trade.getStatus()))
 			.build();
 	}
 

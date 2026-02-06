@@ -25,7 +25,9 @@ public class ProductPricesInfoResponse {
 
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public class QuantityPriceSet {
+	@Getter
+	@Setter
+	public static class QuantityPriceSet {
 		Long id;
 		Integer quantity;
 		Integer price;
