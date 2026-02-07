@@ -224,7 +224,7 @@ public class Product extends BaseEntity {
 	}
 
 	private void changePrices(List<ProductPrice> newPrices) {
-		this.prices.forEach(ProductPrice::inActive);
+		this.prices.forEach(ProductPrice::deprecated);
 		for (ProductPrice price : newPrices) {
 			addPrice(price);
 		}

@@ -45,4 +45,8 @@ public class ProductPrice {
     public void inActive() {
         this.status = PriceTableStatus.INACTIVE;
     }
+
+    public void deprecated() {
+        this.status = PriceTableStatus.DEPRECATED;
+    }
 }
