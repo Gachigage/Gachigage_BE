@@ -60,7 +60,7 @@ public class ProductService {
 			throw new CustomException(INVALID_INPUT_VALUE, "페이지 크기는 0 이상이어야 합니다.");
 		}
 
-		if(requestDto.getPage() == null){
+		if (requestDto.getPage() == null) {
 			throw new CustomException(INVALID_INPUT_VALUE, "조회할 페이지 인덱스를 입력해주세요");
 		}
 
@@ -156,7 +156,7 @@ public class ProductService {
 			.map(priceDto -> ProductPrice.builder()
 				.quantity(priceDto.getQuantity())
 				.price(priceDto.getPrice())
-				.status(PriceTableStatus.ACTIVE)
+				.status(priceDto.getStatus())
 				.build())
 			.toList();
 
