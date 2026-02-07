@@ -89,7 +89,7 @@ public class MypageController {
 	@GetMapping("/wishlist")
 	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getMyWishlist(
 		@AuthenticationPrincipal UserDetails user,
-		@PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+		@PageableDefault(size = 12, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 
 		Long oauthId = Long.valueOf(user.getUsername());
 
