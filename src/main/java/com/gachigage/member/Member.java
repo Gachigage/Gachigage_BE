@@ -48,7 +48,7 @@ public class Member extends BaseEntity {
 	@Column(name = "image_url")
 	private String imageUrl;
 
-	@Column(name = "oauth_id")
+	@Column(name = "oauth_id", nullable = false)
 	private Long oauthId;
 
 	@Column(name = "oauth_provider")
