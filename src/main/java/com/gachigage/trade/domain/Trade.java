@@ -55,6 +55,7 @@ public class Trade extends BaseEntity {
 	@Column(name = "trade_type", nullable = true)
 	private TradeType tradeType;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private TradeStatus status;
 }

@@ -38,7 +38,6 @@ public class TradeService {
 			.product(tradeProduct)
 			.productPrice(productPrice)
 			.status(TradeStatus.DONE)
-			.tradeType(null)
 			.build();
 
 		return tradeRepository.save(trade);
