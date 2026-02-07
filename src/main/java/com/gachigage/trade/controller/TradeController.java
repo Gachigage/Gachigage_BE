@@ -5,11 +5,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gachigage.global.ApiResponse;
-import com.gachigage.trade.domain.Trade;
 import com.gachigage.trade.dto.ProductPricesInfoResponse;
 import com.gachigage.trade.dto.TradeRequest;
 import com.gachigage.trade.service.TradeService;
@@ -34,7 +34,8 @@ public class TradeController {
 
 	@PostMapping("/{chatRoomId}")
 	@Operation(description = "채팅방에서 거래중인 상품 거래 확정, 현재는 바로 거래 확정이 되는 상황")
-	public ResponseEntity<ApiResponse> registerTradeInfo(@PathVariable Long chatRoomId, TradeRequest request) {
+	public ResponseEntity<ApiResponse<Void>> registerTradeInfo(@PathVariable Long chatRoomId,
+		@RequestBody TradeRequest request) {
 		tradeService.createTrade(chatRoomId, request.getProductPriceId());
 		return ResponseEntity.ok(ApiResponse.success());
 	}
