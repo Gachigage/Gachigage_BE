@@ -58,7 +58,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 						.where(productLike.product.eq(product).and(productLike.member.oauthId.eq(loginMemberId)))
 						.exists()
 						:
-						Expressions.asBoolean(false).isTrue() // Always returns a BooleanExpression (false)
+						Expressions.asBoolean(false).isTrue()
 					)
 					.then(true)
 					.otherwise(false),
@@ -66,14 +66,14 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			))
 			.from(productPrice)
 			.join(productPrice.product, product)
-			.leftJoin(product.images, productImage).on(productImage.order.eq(0))
+			.leftJoin(productImage).on(productImage.product.eq(product).and(productImage.order.eq(0)))
 			.leftJoin(product.region, region)
 			.where(
-				titleContains(requestDto.query()),
-				categoryEq(requestDto.categoryId()),
-				priceBetween(requestDto.priceArrange()),
-				locationEq(requestDto.locationDto()),
-				groupEq(requestDto.group()),
+				titleContains(requestDto.getQuery()),
+				categoryEq(requestDto.getCategoryId()),
+				priceBetween(requestDto.getPriceArrange()),
+				locationEq(requestDto.getLocationDto()),
+				groupEq(requestDto.getGroup()),
 				stockGtZero(),
 				priceTableStatusActive()
 			)
@@ -88,11 +88,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 			.join(productPrice.product, product)
 			.leftJoin(product.region, region)
 			.where(
-				titleContains(requestDto.query()),
-				categoryEq(requestDto.categoryId()),
-				priceBetween(requestDto.priceArrange()),
-				locationEq(requestDto.locationDto()),
-				groupEq(requestDto.group()),
+				titleContains(requestDto.getQuery()),
+				categoryEq(requestDto.getCategoryId()),
+				priceBetween(requestDto.getPriceArrange()),
+				locationEq(requestDto.getLocationDto()),
+				groupEq(requestDto.getGroup()),
 				stockGtZero(),
 				priceTableStatusActive()
 			)
@@ -134,18 +134,34 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 	}
 
 	private BooleanExpression priceBetween(ProductListRequestDto.PriceArrangeDto priceArrange) {
-		if (priceArrange == null) {
-			return null;
+		if (priceArrange == null || (priceArrange.getMinPrice() == null && priceArrange.getMaxPrice() == null)) {
+			return null; // No price range filter applies
 		}
-		return productPrice.price.between(priceArrange.minPrice(), priceArrange.maxPrice());
+
+		Integer minPrice = priceArrange.getMinPrice();
+		Integer maxPrice = priceArrange.getMaxPrice();
+
+		if (minPrice != null && maxPrice != null) {
+			return productPrice.price.between(minPrice, maxPrice);
+		} else if (minPrice != null) {
+			return productPrice.price.goe(minPrice);
+		} else { // maxPrice != null
+			return productPrice.price.loe(maxPrice);
+		}
 	}
 
 	private BooleanExpression locationEq(ProductListRequestDto.LocationDto locationDto) {
 		if (locationDto == null) {
 			return null;
 		}
-		return region.province.eq(locationDto.province())
-			.and(region.city.eq(locationDto.city()));
+
+		String province = locationDto.getProvince();
+		String city = locationDto.getCity();
+
+		BooleanExpression provinceExpression = (province != null) ? region.province.eq(province) : null;
+		BooleanExpression cityExpression = (city != null) ? region.city.eq(city) : null;
+
+		return Expressions.allOf(provinceExpression, cityExpression);
 	}
 
 	private BooleanExpression groupEq(String group) {
@@ -181,7 +197,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
 		return queryFactory
 			.selectFrom(product)
-			.join(product.region, region).fetchJoin()
+			.leftJoin(product.region, region).fetchJoin()
 			.join(product.category).fetchJoin()
 			.where(predicate)
 			.orderBy(product.createdAt.desc())

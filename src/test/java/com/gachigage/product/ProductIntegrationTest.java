@@ -1,5 +1,6 @@
 package com.gachigage.product;
 
+import com.gachigage.global.WithMockCustomUser;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -109,10 +110,39 @@ public class ProductIntegrationTest {
 				127.654321, "서울 강남구 역삼동",
 				List.of(ProductPrice.builder().quantity(1).price(10000).status(PriceTableStatus.ACTIVE).build(),
 						ProductPrice.builder().quantity(5).price(45000).status(PriceTableStatus.ACTIVE).build()),
-				List.of(ProductImage.builder().imageUrl("http://localhost/image1.jpg").build(),
-						ProductImage.builder().imageUrl("http://localhost/image2.jpg").build()));
+				List.of(ProductImage.builder().imageUrl("http://localhost/image1.jpg").order(0).build(),
+						ProductImage.builder().imageUrl("http://localhost/image2.jpg").order(1).build()));
 
 		productRepository.save(testProduct);
+
+		// 추가 상품 1: 여러 개의 ACTIVE PriceTable을 가진 상품
+		List<ProductPrice> pricesProduct1 = List.of(
+			ProductPrice.builder().quantity(1).price(1000).status(PriceTableStatus.ACTIVE).build(),
+			ProductPrice.builder().quantity(2).price(1800).status(PriceTableStatus.ACTIVE).build()
+		);
+		Product additionalProduct1 = Product.create(null, testMember, subCategory, testRegion,
+			"추가 상품 1", "설명 1", 5L, TradeType.DELIVERY, 37.0, 127.0, "서울 강남구", pricesProduct1,
+			List.of(ProductImage.builder().imageUrl("http://localhost/image_add1.jpg").build()));
+		productRepository.save(additionalProduct1);
+
+		// 추가 상품 2: ACTIVE와 INACTIVE PriceTable을 모두 가진 상품
+		List<ProductPrice> pricesProduct2 = List.of(
+			ProductPrice.builder().quantity(1).price(2000).status(PriceTableStatus.ACTIVE).build(),
+			ProductPrice.builder().quantity(3).price(5000).status(PriceTableStatus.INACTIVE).build()
+		);
+		Product additionalProduct2 = Product.create(null, testMember, subCategory, testRegion,
+			"추가 상품 2", "설명 2", 10L, TradeType.DIRECT, 37.1, 127.1, "서울 강남구", pricesProduct2,
+			List.of(ProductImage.builder().imageUrl("http://localhost/image_add2.jpg").build()));
+		productRepository.save(additionalProduct2);
+
+		// 추가 상품 3: 단일 ACTIVE PriceTable을 가진 상품
+		List<ProductPrice> pricesProduct3 = List.of(
+			ProductPrice.builder().quantity(1).price(3000).status(PriceTableStatus.ACTIVE).build()
+		);
+		Product additionalProduct3 = Product.create(null, testMember, subCategory, testRegion,
+			"추가 상품 3", "설명 3", 7L, TradeType.DELIVERY, 37.2, 127.2, "서울 강남구", pricesProduct3,
+			List.of(ProductImage.builder().imageUrl("http://localhost/image_add3.jpg").build()));
+		productRepository.save(additionalProduct3);
 	}
 
 	@Test
@@ -177,7 +207,7 @@ public class ProductIntegrationTest {
 
 				.andExpect(jsonPath("$.data.isLiked").value(false))
 
-				.andExpect(jsonPath("$.data.relatedProducts.size").value(0));
+				.andExpect(jsonPath("$.data.relatedProducts.size").value(3));
 
 	}
 
@@ -294,6 +324,63 @@ public class ProductIntegrationTest {
 		regionRepository.deleteAll();
 		productImageRepository.deleteAll();
 	}
+
+	@Test
+	@DisplayName("상품 리스트 조회 통합 테스트 - 페이지네이션 및 가격 테이블 상태 확인")
+	@WithMockCustomUser(oauthId = 111L) // testMember의 oauthId와 동일
+	void testProductListRetrievalAndPagination() throws Exception {
+		// Given: setUp에서 4개의 ACTIVE 가격 테이블 항목이 생성됨 (testProduct 2개, additionalProduct1 2개, additionalProduct2 1개, additionalProduct3 1개)
+		// testProduct: 2 ACTIVE prices
+		// additionalProduct1: 2 ACTIVE prices
+		// additionalProduct2: 1 ACTIVE price (1 INACTIVE price is ignored)
+		// additionalProduct3: 1 ACTIVE price
+		// Total active price entries: 2 + 2 + 1 + 1 = 6
+
+		int totalActivePriceEntries = 6;
+		int pageSize = 2; // 한 페이지에 2개씩
+
+		// 1. 첫 번째 페이지 조회 (page=0)
+		mockMvc.perform(get("/products")
+						.param("page", "0")
+						.param("size", String.valueOf(pageSize))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value(200))
+				.andExpect(jsonPath("$.message").value("성공적으로 처리되었습니다."))
+				.andExpect(jsonPath("$.data.content.size()").value(pageSize))
+				.andExpect(jsonPath("$.data.totalElements").value(totalActivePriceEntries))
+				.andExpect(jsonPath("$.data.totalPages").value((totalActivePriceEntries + pageSize - 1) / pageSize)); // 6 / 2 = 3 pages
+				
+						// 2. 모든 페이지를 순회하며 ACTIVE 상태의 가격 테이블만 반환되는지 확인
+						for (int page = 0; page < (totalActivePriceEntries + pageSize - 1) / pageSize; page++) {
+							String responseContent = mockMvc.perform(get("/products")
+											.param("page", String.valueOf(page))
+											.param("size", String.valueOf(pageSize))
+											.contentType(MediaType.APPLICATION_JSON))
+									.andExpect(status().isOk())
+									.andReturn().getResponse().getContentAsString();
+				
+							// JSON 응답 파싱
+							com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(responseContent);
+							com.fasterxml.jackson.databind.JsonNode contentArray = rootNode.path("data").path("content");
+				
+							for (com.fasterxml.jackson.databind.JsonNode productNode : contentArray) {
+								assertThat(productNode.path("price").asInt()).isNotZero(); // 가격은 0이 아니어야 함 (ACTIVE만 대상)
+								assertThat(productNode.path("quantity").asInt()).isNotZero(); // 수량은 0이 아니어야 함 (ACTIVE만 대상)
+							}
+						}
+				
+						// 3. 존재하지 않는 페이지 조회 (빈 목록 반환)
+						mockMvc.perform(get("/products")
+										.param("page", String.valueOf((totalActivePriceEntries + pageSize - 1) / pageSize))
+										.param("size", String.valueOf(pageSize))
+										.contentType(MediaType.APPLICATION_JSON))
+								.andDo(print())
+								.andExpect(status().isOk())
+								.andExpect(jsonPath("$.data.content.size()").value(0));
+	}
+
 
 }
 

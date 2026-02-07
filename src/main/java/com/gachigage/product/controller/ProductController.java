@@ -2,6 +2,7 @@ package com.gachigage.product.controller;
 
 import java.util.List;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,7 +37,9 @@ import com.gachigage.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Tag(name = "Product", description = "상품 관련 API")
 @RestController
 @RequestMapping("/products")
@@ -60,6 +64,7 @@ public class ProductController {
 	public ResponseEntity<ApiResponse<ProductRegistrationResponseDto>> registerProduct(
 		@RequestBody ProductRegistrationRequestDto requestDto,
 		@AuthenticationPrincipal User user) {
+
 		Product product = productService.createProduct(
 			Long.parseLong(user.getUsername()),
 			requestDto.getCategoryId(),
@@ -116,13 +121,12 @@ public class ProductController {
 	@GetMapping("/{productId}")
 	public ResponseEntity<ApiResponse<ProductDetailResponseDto>> getProductDetails(@PathVariable Long productId,
 		@AuthenticationPrincipal User user) {
-
-		Long loginMemberId = null;
+		Long oauthId = null;
 		if (user != null) {
-			loginMemberId = Long.parseLong(user.getUsername());
+			oauthId = Long.parseLong(user.getUsername());
 		}
 
-		ProductDetailResponseDto response = productService.getProductDetail(productId, loginMemberId);
+		ProductDetailResponseDto response = productService.getProductDetail(productId, oauthId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
@@ -159,9 +163,10 @@ public class ProductController {
 
 	@Operation(summary = "상품 서칭 및 필터링", description = "상품 서칭 및 필터링 결과를 조회합니다.")
 	@GetMapping
-	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(ProductListRequestDto requestDto,
+	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(
+		@ParameterObject @ModelAttribute ProductListRequestDto requestDto,
 		@AuthenticationPrincipal User user) {
-
+		log.info("size ={}", requestDto.getSize());
 		Long loginMemberId = null;
 		if (user != null) {
 			loginMemberId = Long.parseLong(user.getUsername());

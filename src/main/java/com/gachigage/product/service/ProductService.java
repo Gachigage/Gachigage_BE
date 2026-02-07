@@ -56,11 +56,15 @@ public class ProductService {
 	@Transactional(readOnly = true)
 	public Page<ProductListResponseDto> getProducts(ProductListRequestDto requestDto, Long loginMemberId) {
 
-		if (requestDto.size() < 1) {
-			throw new CustomException(RESOURCE_NOT_FOUND, "페이지 크기는 1 이상이어야 합니다.");
+		if (requestDto.getSize() == null || requestDto.getSize() < 0) {
+			throw new CustomException(INVALID_INPUT_VALUE, "페이지 크기는 0 이상이어야 합니다.");
 		}
 
-		Pageable pageable = PageRequest.of(requestDto.page(), requestDto.size());
+		if(requestDto.getPage() == null){
+			throw new CustomException(INVALID_INPUT_VALUE, "조회할 페이지 인덱스를 입력해주세요");
+		}
+
+		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
 		return productRepository.search(requestDto, pageable, loginMemberId);
 	}
 
@@ -92,15 +96,13 @@ public class ProductService {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
 
-		Member member = memberRepository.findById(loginMemberId)
+		Member member = memberRepository.findMemberByOauthId(loginMemberId)
 			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
-
-		if (!product.getSeller().getId().equals(member.getId())) {
-			throw new CustomException(UNAUTHORIZED_USER, "상품 수정 권한이 없는 사용자입니다.");
-		}
 
 		ProductCategory newCategory = productCategoryRepository.findById(subCategoryId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 카테고리입니다"));
+
+		validateAccessorEqualsSeller(product, member);
 
 		List<ProductPrice> newPrices = priceTableDtos.stream()
 			.map(priceDto -> ProductPrice.builder()
@@ -110,13 +112,22 @@ public class ProductService {
 				.build())
 			.toList();
 
-		List<ProductImage> newProductImages = imageUrls.stream()
-			.map(url -> ProductImage.builder().imageUrl(url).build())
-			.toList();
+		List<ProductImage> newProductImages = new java.util.ArrayList<>();
+		for (int i = 0; i < imageUrls.size(); i++) {
+			newProductImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i).build());
+		}
 
-		product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
-			preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
-			newProductImages);
+		Region region = product.getRegion();
+		if (preferredTradeLocationDto != null) {
+			region = getRegion(preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getLatitude());
+			product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
+				preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
+				newProductImages, region);
+			return;
+		}
+
+		product.modify(newCategory, title, detail, stock, tradeType, null,
+			null, null, newPrices, newProductImages, region);
 	}
 
 	@Transactional
@@ -149,9 +160,14 @@ public class ProductService {
 				.build())
 			.toList();
 
-		List<ProductImage> productImages = imageUrls.stream()
-			.map(url -> ProductImage.builder().imageUrl(url).build())
-			.toList();
+		if (imageUrls == null) {
+			throw new CustomException(INVALID_INPUT_VALUE, "이미지 등록은 필수입니다.");
+		}
+
+		List<ProductImage> productImages = new java.util.ArrayList<>();
+		for (int i = 0; i < imageUrls.size(); i++) {
+			productImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i).build());
+		}
 
 		Product product = Product.create(null, seller, category, region, title, detail, stock, tradeType, latitude,
 			longitude, address, priceTables, productImages);
@@ -223,7 +239,8 @@ public class ProductService {
 		return ProductDetailResponseDto.fromEntity(
 			product,
 			isProductLiked,
-			relatedProductDtos
+			relatedProductDtos,
+			isSeller(product, member)
 		);
 	}
 
@@ -307,5 +324,18 @@ public class ProductService {
 			.build();
 
 		return regionRepository.save(region);
+	}
+
+	private void validateAccessorEqualsSeller(Product product, Member member) {
+		if (!product.getSeller().getId().equals(member.getId())) {
+			throw new CustomException(UNAUTHORIZED_USER, "상품 판매자만 점근 가능합니다.");
+		}
+	}
+
+	private boolean isSeller(Product product, Member member) {
+		if (member == null) {
+			return false;
+		}
+		return product.getSeller().getId().equals(member.getId());
 	}
 }

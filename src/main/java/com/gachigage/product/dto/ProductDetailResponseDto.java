@@ -36,11 +36,12 @@ public class ProductDetailResponseDto {
 
 	private Integer viewCount;
 	private Boolean isLiked;
+	private Boolean isOwner;
 
 	private RelatedProductsDto relatedProducts;
 
 	public static ProductDetailResponseDto fromEntity(Product product, boolean isProductLiked,
-		List<RelatedProductDto> relatedProducts) {
+		List<RelatedProductDto> relatedProducts, boolean isOwner) {
 
 		ProductDetailResponseDto response = ProductDetailResponseDto.builder()
 			.productId(product.getId())
@@ -53,6 +54,7 @@ public class ProductDetailResponseDto {
 				.toList())
 			.stock(product.getStock())
 			.priceTable(product.getPrices().stream()
+				.filter(price -> price.getStatus() == PriceTableStatus.ACTIVE)
 				.map(price -> ProductPriceDto.builder()
 					.quantity(price.getQuantity())
 					.price(price.getPrice())
@@ -69,6 +71,7 @@ public class ProductDetailResponseDto {
 			.viewCount(product.getVisitCount())
 			.isLiked(isProductLiked)
 			.relatedProducts(RelatedProductsDto.fromEntity(relatedProducts))
+			.isOwner(isOwner)
 			.build();
 
 		if (product.getCategory().getName().equals("기타")) {
@@ -165,8 +168,8 @@ public class ProductDetailResponseDto {
 				.isLiked(isLiked)
 				.price(minQuantityProdcutPrice.getPrice())
 				.quantity(minQuantityProdcutPrice.getQuantity())
-				.province(product.getRegion().getProvince())
-				.city(product.getRegion().getCity())
+				.province(product.getRegion() == null ? null : product.getRegion().getProvince())
+				.city(product.getRegion() == null ? null : product.getRegion().getCity())
 				.viewCount(product.getVisitCount())
 				.build();
 		}
