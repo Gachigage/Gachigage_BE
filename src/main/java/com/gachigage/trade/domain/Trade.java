@@ -52,9 +52,10 @@ public class Trade extends BaseEntity {
 	private ProductPrice productPrice;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "trade_type", nullable = false)
+	@Column(name = "trade_type", nullable = true)
 	private TradeType tradeType;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
-	private String status;
+	private TradeStatus status;
 }

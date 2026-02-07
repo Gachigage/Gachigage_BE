@@ -136,12 +136,13 @@ public class ChatService {
 				Objects.requireNonNull(chatRoom.getProduct()
 						.getImages()
 						.stream()
-						.filter(image -> image.getOrder() == 1)
+						.filter(image -> image.getOrder() == 0)
 						.findFirst()
 						.orElse(null))
 					.getImageUrl())
 			.unreadCount(unreadCount)
 			.productStatus(chatRoom.getProduct().getStatus())
+			.amIBuyer(memberOauthId.equals(chatRoom.getBuyer().getOauthId()))
 			.build();
 	}
 
@@ -158,7 +159,7 @@ public class ChatService {
 		Slice<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(chatRoomId,
 			pageable);
 
-		return messages.map(ChatMessageResponseDto::from);
+		return messages.map(message -> ChatMessageResponseDto.from(message, userOauthId));
 	}
 
 	public void processMessage(ChatMessageRequestDto messageRequestDto, Long memberOauthId) {
@@ -180,7 +181,7 @@ public class ChatService {
 		chatRoom.updateLastMessage(chatMessage);
 		chatRoom.updateLastReadMessageId(sender.getOauthId(), chatMessage.getId());
 
-		ChatMessageResponseDto responseDto = ChatMessageResponseDto.from(chatMessage);
+		ChatMessageResponseDto responseDto = ChatMessageResponseDto.from(chatMessage, memberOauthId);
 
 		template.convertAndSend("/sub/chat/room/" + chatRoom.getId(), responseDto);
 	}

@@ -2,6 +2,8 @@ package com.gachigage.member.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.gachigage.trade.domain.TradeStatus;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,4 +17,5 @@ public class TradeResponseDto {
 	private String thumbnailUrl;
 	private LocalDateTime tradeDate;
 	private String status;
+	private int quantity;
 }

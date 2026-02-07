@@ -1,6 +1,5 @@
 package com.gachigage.global.login.service;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -15,7 +14,7 @@ import com.gachigage.global.login.CustomOAuth2User;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
 import com.gachigage.member.RoleType;
-import com.gachigage.member.Member;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,29 +48,28 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		}
 
 		Long oauthId = (Long)attributes.get("id");
-		String birthday = (String)kakaoAccount.get("birthday");
-		String birthyear = (String)kakaoAccount.get("birthyear");
-		String name = (String)kakaoAccount.get("name");
+		// String birthday = (String)kakaoAccount.get("birthday");
+		// String birthyear = (String)kakaoAccount.get("birthyear");
+		// String name = (String)kakaoAccount.get("name");
 		String nickname = (String)profile.get("nickname");
 		RoleType roleType = RoleType.USER;
 
-		Member member = saveOrUpdate(oauthId, providerName, email, nickname, name, birthday, birthyear, roleType);
+		Member member = saveOrUpdate(oauthId, providerName, email, nickname, roleType);
 		CustomOAuth2User customOAuth2User = new CustomOAuth2User(member, attributes);
 		log.info("oauth2userservice -> customoauth2user.getAttributes: {}", customOAuth2User.getAttributes());
 
 		return customOAuth2User;
 	}
 
-	private Member saveOrUpdate(Long oauthId, String providerName, String email, String nickname, String name,
-		String birthday, String birthyear, RoleType roleType) {
-		LocalDate birthDate = LocalDate.of(Integer.parseInt(birthyear), Integer.parseInt(birthday.substring(0, 2)),
-			Integer.parseInt(birthday.substring(2)));
+	private Member saveOrUpdate(Long oauthId, String providerName, String email, String nickname, RoleType roleType) {
+		// LocalDate birthDate = LocalDate.of(Integer.parseInt(birthyear), Integer.parseInt(birthday.substring(0, 2)),
+		// 	Integer.parseInt(birthday.substring(2)));
 		Member member = memberRepository.findMemberByEmail(email)
 			.orElse(Member.builder()
-				.name(name)
+				.name(nickname)
 				.email(email)
 				.nickname(nickname)
-				.birthDate(birthDate)
+				// .birthDate(birthDate)
 				.oauthId(oauthId)
 				.oauthProvider(providerName)
 				.roleType(roleType)
