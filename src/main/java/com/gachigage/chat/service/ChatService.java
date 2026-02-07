@@ -143,6 +143,7 @@ public class ChatService {
 			.unreadCount(unreadCount)
 			.productStatus(chatRoom.getProduct().getStatus())
 			.amIBuyer(memberOauthId.equals(chatRoom.getBuyer().getOauthId()))
+			.memberId(isMyRoleSeller ? chatRoom.getSeller().getId() : chatRoom.getBuyer().getId())
 			.build();
 	}
 

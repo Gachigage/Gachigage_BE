@@ -29,6 +29,8 @@ public class ChatMessageResponseDto {
 
 	private final boolean isRead;
 
+	private final Long senderId;
+
 	public static ChatMessageResponseDto from(ChatMessage chatMessage, Long userOauthId) {
 		Member sender = chatMessage.getSender();
 		return ChatMessageResponseDto.builder()
@@ -38,6 +40,7 @@ public class ChatMessageResponseDto {
 			.isMe(sender.getOauthId().equals(userOauthId))
 			.senderIsBuyer(sender.equals(chatMessage.getChatRoom().getBuyer()))
 			.messageType(chatMessage.getMessageType())
+			.senderId(sender.getId())
 			.build();
 	}
 }
