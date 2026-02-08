@@ -1,11 +1,14 @@
 package com.gachigage.trade.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.gachigage.chat.domain.ChatRoom;
 import com.gachigage.chat.repository.ChatRoomRepository;
 import com.gachigage.global.error.CustomException;
 import com.gachigage.global.error.ErrorCode;
+import com.gachigage.product.domain.PriceTableStatus;
 import com.gachigage.product.domain.Product;
 import com.gachigage.product.domain.ProductPrice;
 import com.gachigage.product.repository.ProductPriceRepository;
@@ -48,7 +51,9 @@ public class TradeService {
 			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_INPUT_VALUE, "존재하지 않는 채팅방 정보입니다."));
 
 		Product product = chatRoom.getProduct();
-		return new ProductPricesInfoResponse(product.getStock(), product.getPrices());
+		List<ProductPrice> prices = product.getPrices().stream()
+			.filter(price -> price.getStatus() == PriceTableStatus.ACTIVE).toList();
+		return new ProductPricesInfoResponse(product.getStock(), prices);
 	}
 
 }
