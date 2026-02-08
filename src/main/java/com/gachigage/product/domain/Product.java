@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
 
+import com.gachigage.chat.domain.ChatRoom;
 import com.gachigage.global.common.BaseEntity;
 import com.gachigage.global.error.CustomException;
 import com.gachigage.global.error.ErrorCode;
 import com.gachigage.member.Member;
+import com.gachigage.trade.domain.Trade;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -86,6 +88,12 @@ public class Product extends BaseEntity {
 	private List<ProductPrice> prices = new ArrayList<>();
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<ProductLike> likes = new ArrayList<>();
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<Trade> trades = new ArrayList<>();
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<ChatRoom> chatRooms = new ArrayList<>();
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
