@@ -52,6 +52,7 @@ public class ChatRoom {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private List<ChatMessage> messages = new ArrayList<>();
 
