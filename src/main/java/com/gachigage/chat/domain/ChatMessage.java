@@ -46,6 +46,9 @@ public class ChatMessage {
 	@Lob
 	private String content;
 
+	@Column(name = "message_uuid", nullable = false, unique = true, length = 36)
+	private String messageUuid;
+
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "message_type")
 	private ChatMessageType messageType;

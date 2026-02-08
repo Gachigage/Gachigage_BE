@@ -171,6 +171,7 @@ public class ChatService {
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		ChatMessage chatMessage = ChatMessage.builder()
+			.messageUuid(messageRequestDto.getMessageUuid())
 			.chatRoom(chatRoom)
 			.sender(sender)
 			.messageType(messageRequestDto.getMessageType())

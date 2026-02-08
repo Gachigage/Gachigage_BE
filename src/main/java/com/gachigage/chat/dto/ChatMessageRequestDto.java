@@ -20,4 +20,6 @@ public class ChatMessageRequestDto {
 	private ChatMessageType messageType;
 
 	private String sendTime;
+
+	private String messageUuid;
 }

@@ -31,6 +31,8 @@ public class ChatMessageResponseDto {
 
 	private final Long senderId;
 
+	private final String messageUuid;
+
 	public static ChatMessageResponseDto from(ChatMessage chatMessage, Long userOauthId) {
 		Member sender = chatMessage.getSender();
 		return ChatMessageResponseDto.builder()
@@ -41,6 +43,7 @@ public class ChatMessageResponseDto {
 			.senderIsBuyer(sender.equals(chatMessage.getChatRoom().getBuyer()))
 			.messageType(chatMessage.getMessageType())
 			.senderId(sender.getId())
+			.messageUuid(chatMessage.getMessageUuid())
 			.build();
 	}
 }
