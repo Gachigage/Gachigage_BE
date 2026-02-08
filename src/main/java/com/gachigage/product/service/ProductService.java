@@ -18,7 +18,6 @@ import com.gachigage.global.error.CustomException;
 import com.gachigage.image.service.ImageService;
 import com.gachigage.member.Member;
 import com.gachigage.member.MemberRepository;
-import com.gachigage.product.domain.PriceTableStatus;
 import com.gachigage.product.domain.Product;
 import com.gachigage.product.domain.ProductCategory;
 import com.gachigage.product.domain.ProductImage;
@@ -89,45 +88,87 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void modifyProduct(Long productId, Long loginMemberId, Long subCategoryId, String title, String detail,
-		Long stock, List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTableDtos, TradeType tradeType,
-		ProductModifyRequestDto.TradeLocationRegistrationDto preferredTradeLocationDto, List<String> imageUrls) {
-
+	public void modifyProduct(
+		Long productId,
+		Long loginMemberId,
+		Long subCategoryId,
+		String title,
+		String detail,
+		Long stock,
+		List<ProductRegistrationRequestDto.ProductPriceRegistrationDto> priceTableDtos,
+		TradeType tradeType,
+		ProductModifyRequestDto.TradeLocationRegistrationDto tradeLocationDto,
+		List<String> imageUrls
+	) {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 상품입니다"));
 
 		Member member = memberRepository.findMemberByOauthId(loginMemberId)
 			.orElseThrow(() -> new CustomException(USER_NOT_FOUND, "존재하지 않는 회원입니다"));
 
-		ProductCategory newCategory = productCategoryRepository.findById(subCategoryId)
-			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 카테고리입니다"));
-
 		validateAccessorEqualsSeller(product, member);
 
-		List<ProductPrice> newPrices = priceTableDtos.stream()
-			.map(priceDto -> ProductPrice.builder()
-				.quantity(priceDto.getQuantity())
-				.price(priceDto.getPrice())
-				.status(priceDto.getStatus())
+		ProductCategory category = productCategoryRepository.findById(subCategoryId)
+			.orElseThrow(() -> new CustomException(RESOURCE_NOT_FOUND, "존재하지 않는 카테고리입니다"));
+
+		List<ProductPrice> prices = priceTableDtos.stream()
+			.map(dto -> ProductPrice.builder()
+				.quantity(dto.getQuantity())
+				.price(dto.getPrice())
+				.status(dto.getStatus())
 				.build())
 			.toList();
 
-		List<ProductImage> newProductImages = new java.util.ArrayList<>();
+		List<ProductImage> images = createProductImages(imageUrls);
+
+		Region region = resolveRegion(product, tradeLocationDto);
+
+		product.modify(
+			category,
+			title,
+			detail,
+			stock,
+			tradeType,
+			tradeLocationDto != null ? tradeLocationDto.getLatitude() : null,
+			tradeLocationDto != null ? tradeLocationDto.getLongitude() : null,
+			tradeLocationDto != null ? tradeLocationDto.getAddress() : null,
+			prices,
+			images,
+			region
+		);
+	}
+
+	private List<ProductImage> createProductImages(List<String> imageUrls) {
+		if (imageUrls == null || imageUrls.isEmpty()) {
+			throw new CustomException(INVALID_INPUT_VALUE, "이미지 등록은 필수입니다.");
+		}
+
+		List<ProductImage> images = new java.util.ArrayList<>();
 		for (int i = 0; i < imageUrls.size(); i++) {
-			newProductImages.add(ProductImage.builder().imageUrl(imageUrls.get(i)).order(i).build());
+			images.add(ProductImage.builder()
+				.imageUrl(imageUrls.get(i))
+				.order(i)
+				.build());
+		}
+		return images;
+	}
+
+	private Region resolveRegion(
+		Product product,
+		ProductModifyRequestDto.TradeLocationRegistrationDto dto
+	) {
+		if (dto == null) {
+			return product.getRegion();
 		}
 
-		Region region = product.getRegion();
-		if (preferredTradeLocationDto != null) {
-			region = getRegion(preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getLatitude());
-			product.modify(newCategory, title, detail, stock, tradeType, preferredTradeLocationDto.getLatitude(),
-				preferredTradeLocationDto.getLongitude(), preferredTradeLocationDto.getAddress(), newPrices,
-				newProductImages, region);
-			return;
+		boolean hasCoordinates =
+			dto.getLatitude() != null && dto.getLongitude() != null;
+
+		if (hasCoordinates) {
+			return getRegion(dto.getLongitude(), dto.getLatitude());
 		}
 
-		product.modify(newCategory, title, detail, stock, tradeType, null,
-			null, null, newPrices, newProductImages, region);
+		return product.getRegion();
 	}
 
 	@Transactional
