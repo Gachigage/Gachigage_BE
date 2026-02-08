@@ -166,7 +166,8 @@ public class ProductController {
 	public ResponseEntity<ApiResponse<Page<ProductListResponseDto>>> getSearching(
 		@ParameterObject @ModelAttribute ProductListRequestDto requestDto,
 		@AuthenticationPrincipal User user) {
-		log.info("size ={}", requestDto.getSize());
+		log.info("product city={}", requestDto.getLocationDto().getCity());
+
 		Long loginMemberId = null;
 		if (user != null) {
 			loginMemberId = Long.parseLong(user.getUsername());
